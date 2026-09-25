@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Privacy & Local Storage | Christian's Auto Repair</title>
+  <meta name="description" content="How Christian's Auto Repair's website handles locally saved service-request drafts, saved vehicles, contact details, VIN decoding, and optional photos." />
+  <meta name="theme-color" content="#111315" />
+  <meta name="robots" content="index,follow" />
+  <link rel="canonical" href="https://zdaman3030.github.io/Car/privacy.html" />
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap nav-wrap">
+      <a class="brand" href="./" aria-label="Christian's Auto Repair home">
+        <span class="brand-mark">CAR</span>
+        <span><strong>Christian's</strong><small>Auto Repair</small></span>
+      </a>
+      <a class="btn btn-ghost" href="./#request">Request Service</a>
+    </div>
+  </header>
+  <main id="main">
+    <section class="section">
+      <div class="wrap policy-wrap">
+        <p class="eyebrow">PRIVACY & LOCAL STORAGE</p>
+        <h1>What this website stores and shares</h1>
+        <p class="lead">This site is intentionally built without a customer database or paid backend. Most information stays in your browser unless you choose to share it.</p>
+
+        <div class="policy-grid">
+          <section class="panel">
+            <h2>Saved on your device</h2>
+            <p>Service-request drafts, saved vehicles, and contact details you explicitly choose to remember are stored in your browser's local storage on that device. They are not automatically uploaded to Christian's Auto Repair.</p>
+          </section>
+          <section class="panel">
+            <h2>VIN decoding</h2>
+            <p>When you use VIN decoding, the VIN is sent to the public NHTSA vPIC service so available vehicle details can be returned. Manual vehicle entry remains available if you prefer not to use VIN decoding.</p>
+          </section>
+          <section class="panel">
+            <h2>Photos</h2>
+            <p>Selected photos remain on your device unless you choose a Share action that includes them. The website does not automatically upload photos to a server.</p>
+          </section>
+          <section class="panel">
+            <h2>Service assistant</h2>
+            <p>The current service assistant runs in your browser using local logic. Your chat messages are not sent to a paid generative-AI API by this website.</p>
+          </section>
+          <section class="panel">
+            <h2>Submitting a request</h2>
+            <p>The website currently prepares a service-request summary for copy, share, text, email, print, or download. A request is not automatically submitted or confirmed until you send it using one of those methods after Christian's contact information is configured.</p>
+          </section>
+          <section class="panel">
+            <h2>Clearing saved information</h2>
+            <p>You can clear the saved service draft and saved contact details from the Request Service section. Saved vehicles can also be removed individually. Clearing this site's browser storage will remove all locally saved website data.</p>
+          </section>
+        </div>
+
+        <div class="callout policy-note">
+          <div>
+            <strong>No tracking claim is being made beyond the site's current code.</strong>
+            <span>This page describes how the current website is implemented. It does not invent legal, retention, warranty, or business policies that Christian has not provided.</span>
+          </div>
+          <a class="btn btn-primary" href="./">Back to Website</a>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer>
+    <div class="wrap footer-grid">
+      <div class="brand footer-brand"><span class="brand-mark">CAR</span><span><strong>Christian's</strong><small>Auto Repair</small></span></div>
+      <p>Privacy & local storage information</p>
+      <p>© <span id="privacyYear"></span> Christian's Auto Repair</p>
+    </div>
+  </footer>
+  <script>document.getElementById("privacyYear").textContent=new Date().getFullYear();</script>
+</body>
+</html>
