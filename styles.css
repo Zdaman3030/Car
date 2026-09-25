@@ -489,3 +489,18 @@ footer{
   .truck-card{transform:none!important}
   .btn:hover,.btn:focus-visible,.card:hover,.mini-card:hover{transform:none}
 }
+
+.site-header.scrolled{
+  background:rgba(8,10,12,.96);
+  box-shadow:0 14px 38px rgba(0,0,0,.28);
+}
+.premium-surface:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  border-radius:inherit;
+  opacity:.72;
+  background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(255,255,255,.075),transparent 34%);
+  mix-blend-mode:screen;
+}
