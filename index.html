@@ -54,7 +54,7 @@
       <nav id="siteNav" class="site-nav" aria-label="Primary navigation">
         <a href="#services">Services</a>
         <a href="#how">How it works</a>
-        <a href="#assistant">Service assistant</a>
+        <a href="#assistant">Concierge</a>
         <a href="#request">Request service</a>
         <a href="#faq">FAQ</a>
       </nav>
@@ -66,7 +66,7 @@
       <a href="#home">Overview</a>
       <a href="#services">Services</a>
       <a href="#premiumExperience">Concierge</a>
-      <a href="#assistant">Assistant</a>
+      <a href="#assistant">Concierge</a>
       <a href="#mobileCheck">Mobile Check</a>
       <a href="#request">Request</a>
       <a href="#faq">FAQ</a>
@@ -318,7 +318,7 @@
 
         <div id="draftResumeBanner" class="draft-resume" hidden>
           <div><span class="status-dot"></span><p><strong>Saved request found</strong><small>Your unfinished request was restored on this device.</small></p></div>
-          <button id="dismissDraftBanner" class="link-btn" type="button">Dismiss</button>
+          <div class="draft-resume-actions"><button id="startFreshDraft" class="link-btn" type="button">Start Fresh</button><button id="dismissDraftBanner" class="link-btn" type="button">Dismiss</button></div>
         </div>
         <div class="request-step-nav" aria-label="Request form steps">
           <button type="button" data-step-target="step-contact"><span>1</span>Contact</button>
@@ -405,6 +405,12 @@
               <button type="button" data-issue="Overheating">Overheating</button>
               <button type="button" data-issue="Brake issue">Brakes</button>
               <button type="button" data-issue="Battery / charging">Battery / charging</button>
+              <button type="button" data-issue="Electrical">Electrical</button>
+              <button type="button" data-issue="Steering / suspension">Steering / suspension</button>
+              <button type="button" data-issue="Drivetrain / transmission">Transmission</button>
+              <button type="button" data-issue="Heating / A/C">A/C & heat</button>
+              <button type="button" data-issue="Exhaust">Exhaust</button>
+              <button type="button" data-issue="Tire / wheel">Tire / wheel</button>
               <button type="button" data-issue="Noise / vibration">Noise / vibration</button>
               <button type="button" data-issue="Leak">Leak</button>
               <button type="button" data-issue="Maintenance">Maintenance</button>
@@ -412,7 +418,8 @@
             </div>
             <input id="issueCategory" name="issueCategory" type="hidden" />
             <label class="block">Describe the problem
-              <textarea id="problem" name="problem" required rows="6" placeholder="What happened, when did it start, what warning lights are on, and what does the vehicle do now?"></textarea>
+              <textarea id="problem" name="problem" required rows="6" maxlength="2000" aria-describedby="problemCounter" placeholder="What happened, when did it start, what warning lights are on, and what does the vehicle do now?"></textarea>
+              <span id="problemCounter" class="field-help text-counter">0 / 2000</span>
             </label>
             <div class="form-grid">
               <label>Preferred date <input name="preferredDate" type="date" /></label>
@@ -436,7 +443,7 @@
               <div id="dtcResults" class="dtc-results" aria-live="polite"></div>
               <input id="dtcCodes" name="dtcCodes" type="hidden" />
             </div>
-            <label class="block">Additional notes <textarea name="notes" rows="3"></textarea></label>
+            <label class="block">Additional notes <textarea id="additionalNotes" name="notes" rows="3" maxlength="1000" aria-describedby="notesCounter"></textarea><span id="notesCounter" class="field-help text-counter">0 / 1000</span></label>
             <label class="block">Optional photos
               <input id="photos" name="photos" type="file" accept="image/*" multiple />
               <span class="field-help">Add up to 4 photos of warning lights, leaks, visible damage, tires, or other useful details. Photos stay on your device unless you choose to share them.</span>
@@ -532,7 +539,7 @@
   </main>
 
   <button id="backToTop" class="back-to-top" type="button" aria-label="Back to top" hidden>↑</button>
-  <a class="chat-fab" href="#assistant" aria-label="Open service assistant">Ask the Service Concierge</a>
+  <a class="chat-fab" href="#assistant" aria-label="Open Service Concierge">Ask the Service Concierge</a>
 
   <div class="mobile-bar" aria-label="Quick contact">
     <a class="contact-placeholder" href="#contact" hidden>Call</a>
