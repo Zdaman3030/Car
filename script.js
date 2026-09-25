@@ -8,6 +8,7 @@ function readSessionChat(){
 const state={chat:readSessionChat(),intake:{}};
 const draftKey="christiansAutoRepairServiceDraft";
 const savedVehiclesKey="christiansAutoRepairSavedVehicles";
+const savedContactKey="christiansAutoRepairSavedContact";
 let selectedPhotos=[];
 let latestRequestSummary="";
 
@@ -68,6 +69,42 @@ function restoreDraft(){
   }catch{}
 }
 restoreDraft();
+
+function loadSavedContact(){
+  try{
+    const saved=JSON.parse(localStorage.getItem(savedContactKey)||"null");
+    if(!saved)return;
+    const form=$("#serviceForm");
+    for(const key of ["name","phone","email","contactPreference","location"]){
+      const el=form.elements.namedItem(key);
+      if(el&&saved[key])el.value=saved[key];
+    }
+    const remember=$("#rememberContact");if(remember)remember.checked=true;
+  }catch{}
+}
+function saveRememberedContact(){
+  const remember=$("#rememberContact");
+  if(!remember?.checked)return;
+  const form=$("#serviceForm");
+  const data={};
+  for(const key of ["name","phone","email","contactPreference","location"]){
+    data[key]=String(form.elements.namedItem(key)?.value||"").trim();
+  }
+  localStorage.setItem(savedContactKey,JSON.stringify(data));
+}
+loadSavedContact();
+$("#rememberContact")?.addEventListener("change",e=>{
+  if(e.target.checked)saveRememberedContact();
+  else localStorage.removeItem(savedContactKey);
+});
+["name","phone","email","contactPreference","location"].forEach(key=>{
+  $("#serviceForm").elements.namedItem(key)?.addEventListener("change",saveRememberedContact);
+});
+$("#clearSavedContact")?.addEventListener("click",()=>{
+  localStorage.removeItem(savedContactKey);
+  const remember=$("#rememberContact");if(remember)remember.checked=false;
+  const status=$("#vinStatus");if(status)status.textContent="Saved contact details cleared from this device.";
+});
 
 function readSavedVehicles(){
   try{
@@ -280,6 +317,61 @@ $("#sendToRequest").addEventListener("click",()=>{
 
 $$("[data-issue]").forEach(b=>b.addEventListener("click",()=>{$$("[data-issue]").forEach(x=>x.classList.remove("active"));b.classList.add("active");$("#issueCategory").value=b.dataset.issue;saveDraft();updateSafetyAlert()}));
 
+function evaluateMobileSuitability(){
+  const category=$("#checkerCategory")?.value||"";
+  const drivability=$("#checkerDrivability")?.value||"";
+  const surface=$("#checkerSurface")?.value||"";
+  const dangerChecked=Boolean($("#checkerDanger")?.checked);
+  const result=$("#mobileCheckResult");
+  if(!result)return;
+  if(!category&&!drivability&&!surface&&!dangerChecked){
+    result.hidden=false;
+    result.className="checker-result needs-review";
+    result.innerHTML="<strong>Add a few details first.</strong><span>Select the concern, vehicle status, or work surface so the checker has something to review.</span>";
+    return;
+  }
+  let title="Needs Christian's review";
+  let body="Many mobile repairs are possible, but the exact job, access, tools, parts, and vehicle condition still need to be confirmed.";
+  let cls="needs-review";
+  const likelyCategories=["Diagnostics","No-start","Check-engine light","Battery / charging","Electrical","Maintenance","Heating / A/C","Noise / vibration"];
+  if(dangerChecked){
+    title="Safety first — do not rely on mobile suitability";
+    body="If the vehicle has severe brake loss, active overheating, smoke/fire, a suspected fuel leak, steering loss, or another unsafe condition, stop driving it and arrange towing or immediate professional help as appropriate.";
+    cls="unsafe";
+  }else if(surface==="Gravel"||surface==="Other / unsure"){
+    title="Mobile service may be possible, but the work area needs review";
+    body="Some repairs require a stable, level work surface. Send the location details so Christian can confirm whether the job can be performed safely there.";
+  }else if(drivability==="Runs but should not be driven"||drivability==="Starts but does not drive"){
+    title="Likely worth a mobile-service review";
+    body="A vehicle that should not be driven may benefit from mobile diagnosis or repair, but the exact issue still determines whether the work can be completed on-site.";
+  }else if(drivability==="Does not start"||likelyCategories.includes(category)){
+    title="Often a good candidate for mobile service";
+    body="This type of concern is commonly suitable for mobile diagnosis or repair, subject to Christian's review of the exact symptoms, vehicle, location, tools, and parts required.";
+    cls="likely";
+  }else if(category==="Brakes"||category==="Steering / suspension"||category==="Overheating"||category==="Leak"||category==="Exhaust"||category==="Tire / wheel"){
+    title="Needs a job-specific mobile-service review";
+    body="These repairs can sometimes be handled on-site, but safety, lifting/support needs, access, and the exact failed parts matter. Submit the details before assuming the repair can be done mobile.";
+  }
+  result.hidden=false;
+  result.className="checker-result "+cls;
+  result.innerHTML="<strong>"+title+"</strong><span>"+body+"</span><button class='link-btn checker-prefill' type='button'>Use these details in my request</button>";
+  result.querySelector(".checker-prefill")?.addEventListener("click",()=>{
+    const form=$("#serviceForm");
+    if(category){
+      const map={"Diagnostics":"Other","No-start":"No-start","Check-engine light":"Check-engine light","Battery / charging":"Battery / charging","Brakes":"Brake issue","Overheating":"Overheating","Maintenance":"Maintenance","Leak":"Leak","Noise / vibration":"Noise / vibration"};
+      const issue=map[category]||"Other";
+      $("#issueCategory").value=issue;
+      $("[data-issue]").forEach(b=>b.classList.toggle("active",b.dataset.issue===issue));
+    }
+    if(drivability)form.elements.namedItem("drivability").value=drivability;
+    if(surface)form.elements.namedItem("parkingSurface").value=surface;
+    if(category&&!$("#problem").value.trim())$("#problem").value="Concern category: "+category+". ";
+    saveDraft();updateFormProgress();updateSafetyAlert();
+    location.hash="request";
+  });
+}
+$("#runMobileCheck")?.addEventListener("click",evaluateMobileSuitability);
+
 const photosInput=$("#photos"),photoList=$("#photoList");
 if(photosInput){
   photosInput.addEventListener("change",()=>{
@@ -384,6 +476,7 @@ function buildSummary(fd,requestRef){
 $("#serviceForm").addEventListener("submit",e=>{
   e.preventDefault();
   const form=e.currentTarget;
+  saveRememberedContact();
   validateContact(form);
   if(!form.reportValidity())return;
   const requestRef=getRequestReference();
