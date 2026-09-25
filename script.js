@@ -62,7 +62,7 @@ function restoreDraft(){
       if(el && typeof v==="string") el.value=v;
     });
     if(data.issueCategory){
-      $("[data-issue]").forEach(b=>b.classList.toggle("active",b.dataset.issue===data.issueCategory));
+      $$("[data-issue]").forEach(b=>b.classList.toggle("active",b.dataset.issue===data.issueCategory));
     }
     const status=$("#vinStatus");
     if(status) status.textContent="Saved service-request draft restored.";
@@ -310,7 +310,7 @@ $("#clearChat").addEventListener("click",()=>{state.chat=[];state.intake={};sess
 $("#sendToRequest").addEventListener("click",()=>{
   const transcript=state.chat.filter(m=>m.role==="user").map(m=>m.text).join(" | ");
   if(transcript) $("#problem").value=transcript;
-  if(state.intake.category){$("#issueCategory").value=state.intake.category;$("[data-issue]").forEach(b=>b.classList.toggle("active",b.dataset.issue===state.intake.category))}
+  if(state.intake.category){$("#issueCategory").value=state.intake.category;$$("[data-issue]").forEach(b=>b.classList.toggle("active",b.dataset.issue===state.intake.category))}
   saveDraft();
   location.hash="request";
 });
@@ -361,7 +361,7 @@ function evaluateMobileSuitability(){
       const map={"Diagnostics":"Other","No-start":"No-start","Check-engine light":"Check-engine light","Battery / charging":"Battery / charging","Brakes":"Brake issue","Overheating":"Overheating","Maintenance":"Maintenance","Leak":"Leak","Noise / vibration":"Noise / vibration"};
       const issue=map[category]||"Other";
       $("#issueCategory").value=issue;
-      $("[data-issue]").forEach(b=>b.classList.toggle("active",b.dataset.issue===issue));
+      $$("[data-issue]").forEach(b=>b.classList.toggle("active",b.dataset.issue===issue));
     }
     if(drivability)form.elements.namedItem("drivability").value=drivability;
     if(surface)form.elements.namedItem("parkingSurface").value=surface;
@@ -608,7 +608,7 @@ if(installBtn) installBtn.addEventListener("click",async()=>{
 window.addEventListener("appinstalled",()=>{if(installBtn)installBtn.hidden=true});
 
 if("IntersectionObserver" in window){
-  const navLinks=$(".site-nav a");
+  const navLinks=$$(".site-nav a");
   const targetMap=new Map(navLinks.map(a=>[a.getAttribute("href")?.slice(1),a]));
   const observer=new IntersectionObserver(entries=>{
     const visible=entries.filter(e=>e.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];
