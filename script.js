@@ -28,6 +28,21 @@ if(preferredDateInput) preferredDateInput.min=new Date().toISOString().slice(0,1
   });
 })();
 
+function enrichBusinessSchema(){
+  const cfg=window.CAR_CONFIG||{};
+  const node=document.querySelector('script[type="application/ld+json"]');
+  if(!node)return;
+  try{
+    const schema=JSON.parse(node.textContent);
+    schema.url="https://zdaman3030.github.io/Car/";
+    if(cfg.phoneHref&&cfg.phoneDisplay&&!String(cfg.phoneDisplay).startsWith("["))schema.telephone=cfg.phoneDisplay;
+    if(cfg.emailDisplay&&!String(cfg.emailDisplay).startsWith("["))schema.email=cfg.emailDisplay;
+    if(cfg.serviceArea&&!String(cfg.serviceArea).startsWith("["))schema.areaServed=cfg.serviceArea;
+    node.textContent=JSON.stringify(schema);
+  }catch{}
+}
+enrichBusinessSchema();
+
 function saveDraft(){
   const form=$("#serviceForm");
   if(!form || form.hidden) return;
