@@ -61,7 +61,7 @@ function restoreDraft(){
       if(el && typeof v==="string") el.value=v;
     });
     if(data.issueCategory){
-      $$("[data-issue]").forEach(b=>b.classList.toggle("active",b.dataset.issue===data.issueCategory));
+      $$$("[data-issue]").forEach(b=>b.classList.toggle("active",b.dataset.issue===data.issueCategory));
     }
     const status=$("#vinStatus");
     if(status) status.textContent="Saved service-request draft restored.";
@@ -273,12 +273,12 @@ $("#clearChat").addEventListener("click",()=>{state.chat=[];state.intake={};sess
 $("#sendToRequest").addEventListener("click",()=>{
   const transcript=state.chat.filter(m=>m.role==="user").map(m=>m.text).join(" | ");
   if(transcript) $("#problem").value=transcript;
-  if(state.intake.category){$("#issueCategory").value=state.intake.category;$$("[data-issue]").forEach(b=>b.classList.toggle("active",b.dataset.issue===state.intake.category))}
+  if(state.intake.category){$("#issueCategory").value=state.intake.category;$$$("[data-issue]").forEach(b=>b.classList.toggle("active",b.dataset.issue===state.intake.category))}
   saveDraft();
   location.hash="request";
 });
 
-$("[data-issue]").forEach(b=>b.addEventListener("click",()=>{$("[data-issue]").forEach(x=>x.classList.remove("active"));b.classList.add("active");$("#issueCategory").value=b.dataset.issue;saveDraft();updateSafetyAlert()}));
+$$("[data-issue]").forEach(b=>b.addEventListener("click",()=>{$$("[data-issue]").forEach(x=>x.classList.remove("active"));b.classList.add("active");$("#issueCategory").value=b.dataset.issue;saveDraft();updateSafetyAlert()}));
 
 const photosInput=$("#photos"),photoList=$("#photoList");
 if(photosInput){
