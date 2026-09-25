@@ -1,5 +1,11 @@
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-const state={chat:JSON.parse(sessionStorage.getItem("carChat")||"[]"),intake:{}};
+function readSessionChat(){
+  try{
+    const parsed=JSON.parse(sessionStorage.getItem("carChat")||"[]");
+    return Array.isArray(parsed)?parsed:[];
+  }catch{return []}
+}
+const state={chat:readSessionChat(),intake:{}};
 const draftKey="christiansAutoRepairServiceDraft";
 let selectedPhotos=[];
 let latestRequestSummary="";
@@ -98,6 +104,30 @@ function localAssistantReply(raw){
     state.intake.category="Leak";
     return "For a leak, note the fluid color, approximate location under the vehicle, whether there is a smell, and how quickly it appears. Avoid driving if you suspect fuel, severe coolant loss, or significant brake-fluid loss.";
   }
+  if(/transmission|gear|shifting|won't shift|slipping/.test(t)){
+    state.intake.category="Drivetrain / transmission";
+    return "For a shifting or transmission concern, tell me whether it happens in a specific gear, whether the vehicle moves normally, whether any warning lights are on, and whether you notice slipping, harsh shifts, delayed engagement, or fluid leaks. Mobile suitability depends on the exact diagnosis and repair.";
+  }
+  if(/a\/c|air conditioning|ac |heater|heat not|blower/.test(t)){
+    state.intake.category="Heating / A/C";
+    return "For heating or A/C concerns, tell me whether the blower works, whether air temperature changes at all, whether the issue is constant or intermittent, and whether there are unusual smells or noises.";
+  }
+  if(/steering|suspension|strut|shock|ball joint|tie rod/.test(t)){
+    state.intake.category="Steering / suspension";
+    return "For steering or suspension concerns, tell me whether the vehicle pulls, wanders, clunks, vibrates, sits unevenly, or feels loose, and whether the symptom changes while turning, braking, or going over bumps.";
+  }
+  if(/electrical|fuse|window|lock|light|wiring/.test(t)){
+    state.intake.category="Electrical";
+    return "For an electrical concern, tell me exactly what stopped working, whether it is intermittent, whether any fuses were checked, and whether the issue started after a battery change, repair, jump-start, or other event.";
+  }
+  if(/exhaust|muffler|catalytic|loud exhaust/.test(t)){
+    state.intake.category="Exhaust";
+    return "For an exhaust concern, describe where the sound seems to come from, whether you smell exhaust inside the vehicle, whether a check-engine light is on, and whether the noise changes with engine speed.";
+  }
+  if(/tire|wheel|flat|tpms/.test(t)){
+    state.intake.category="Tire / wheel";
+    return "For a tire or wheel concern, tell me which corner is affected, whether the tire is flat or losing pressure, whether there is visible damage, and whether you feel vibration or pulling. Do not drive on a severely damaged or flat tire.";
+  }
   if(/maintenance|oil change|tune.?up|service/.test(t)){
     state.intake.category="Maintenance";
     return "Christian's Auto Repair handles routine maintenance and many mechanical services on-site. Tell me the vehicle and what maintenance is due, or enter the VIN below to auto-fill available vehicle details.";
@@ -113,6 +143,9 @@ function localAssistantReply(raw){
   }
   if(/can.*mobile|done mobile|repair.*mobile/.test(t)){
     return "Many diagnostic, maintenance, electrical, brake, engine, cooling, steering/suspension, and general repair jobs can be done mobile. Final suitability depends on the exact vehicle, problem, location, and tools/parts required.";
+  }
+  if(state.intake.category){
+    return "Got it. For "+state.intake.category.toLowerCase()+", add when the symptom started, any warning lights or messages, whether the vehicle still starts and drives, and any recent repairs or changes. When you’re ready, I can move everything you’ve told me into the service request.";
   }
   return "I can help narrow this down for the service request. Tell me the main symptom, when it started, any warning lights, whether the vehicle starts and drives, and anything that happened immediately before the problem.";
 }
@@ -184,7 +217,7 @@ $("#vin").addEventListener("input",e=>{
 });
 $("#decodeVin").addEventListener("click",async()=>{
   const vin=$("#vin").value.trim(),status=$("#vinStatus");
-  if(vin.length!==17){status.textContent="VIN should be 17 characters. You can still enter vehicle details manually.";return}
+  if(vin.length!==17){status.textContent="VIN should be 17 characters. You can still enter vehicle details manually.";$("#vin").setAttribute("aria-invalid","true");return}
   status.textContent="Decoding VIN…";$("#decodeVin").disabled=true;
   try{
     const r=await fetch("https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValuesExtended/"+encodeURIComponent(vin)+"?format=json");
@@ -195,8 +228,8 @@ $("#decodeVin").addEventListener("click",async()=>{
     set("#year",data.ModelYear);set("#make",data.Make);set("#model",data.Model);set("#trim",data.Trim||data.Series);
     const engine=[data.DisplacementL&&data.DisplacementL+"L",data.EngineCylinders&&data.EngineCylinders+" cyl",data.EngineModel].filter(Boolean).join(" • ");
     set("#engine",engine);set("#body",data.BodyClass);set("#drive",data.DriveType);set("#fuel",data.FuelTypePrimary);
-    status.textContent="VIN decoded. Please review the vehicle details and correct anything that looks wrong.";
-  }catch(err){status.textContent="We couldn't decode that VIN right now. Please enter the vehicle details manually or try again later."}
+    $("#vin").removeAttribute("aria-invalid");status.textContent="VIN decoded. Please review the vehicle details and correct anything that looks wrong.";saveDraft();updateFormProgress();
+  }catch(err){$("#vin").setAttribute("aria-invalid","true");status.textContent="We couldn't decode that VIN right now. Please enter the vehicle details manually or try again later."}
   finally{$("#decodeVin").disabled=false}
 });
 
@@ -210,6 +243,9 @@ function technicianNotes(fd){
   if(g("drivability")) lines.push("Drivability: "+g("drivability"));
   if(g("issueCategory")) lines.push("Issue category: "+g("issueCategory"));
   if(g("problem")) lines.push("Primary symptoms: "+g("problem"));
+  if(g("symptomStarted")) lines.push("Symptom started: "+g("symptomStarted"));
+  if(g("warningLights")) lines.push("Warning lights/messages: "+g("warningLights"));
+  if(g("recentRepairs")) lines.push("Recent repairs/changes: "+g("recentRepairs"));
   if(g("notes")) lines.push("Additional history/notes: "+g("notes"));
   if(selectedPhotos.length) lines.push("Photo attachments selected: "+selectedPhotos.map(f=>f.name).join(", "));
   return lines.join("\n");
@@ -237,23 +273,34 @@ function validateContact(form){
   return true;
 }
 
-function buildSummary(fd){
+function getRequestReference(){
+  const d=new Date();
+  const ymd=[d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("");
+  const bytes=new Uint8Array(2);
+  if(globalThis.crypto?.getRandomValues) crypto.getRandomValues(bytes);
+  else{bytes[0]=Math.floor(Math.random()*256);bytes[1]=Math.floor(Math.random()*256)}
+  return "CAR-"+ymd+"-"+[...bytes].map(x=>x.toString(16).padStart(2,"0")).join("").toUpperCase();
+}
+
+function buildSummary(fd,requestRef){
   const labels={
     name:"Customer",phone:"Phone",email:"Email",contactPreference:"Preferred contact",location:"Service location",
     vin:"VIN",year:"Year",make:"Make",model:"Model",trim:"Trim / Series",engine:"Engine",body:"Body style",drive:"Drivetrain",fuel:"Fuel type",mileage:"Mileage",
-    drivability:"Drivability",issueCategory:"Issue category",problem:"Problem / symptoms",preferredDate:"Preferred date",preferredTime:"Preferred time",notes:"Additional notes"
+    drivability:"Drivability",issueCategory:"Issue category",problem:"Problem / symptoms",symptomStarted:"When it started",warningLights:"Warning lights / messages",recentRepairs:"Recent repairs or changes",preferredDate:"Preferred date",preferredTime:"Preferred time",notes:"Additional notes"
   };
   const customer=[...fd.entries()].filter(([,v])=>String(v).trim()).map(([k,v])=>(labels[k]||k)+": "+v).join("\n");
   const tech=technicianNotes(fd);
-  return customer+"\n\n--- TECHNICIAN INTAKE SUMMARY ---\n"+tech;
+  return "Request reference: "+requestRef+"\n"+customer+"\n\n--- TECHNICIAN INTAKE SUMMARY ---\n"+tech;
 }
 $("#serviceForm").addEventListener("submit",e=>{
   e.preventDefault();
   const form=e.currentTarget;
   validateContact(form);
   if(!form.reportValidity())return;
-  const summary=buildSummary(new FormData(form));
+  const requestRef=getRequestReference();
+  const summary=buildSummary(new FormData(form),requestRef);
   latestRequestSummary=summary;
+  $("#requestRef").textContent=requestRef;
   saveDraft();
   $("#requestSummary").textContent=summary;updateRequestHandoff(summary);form.hidden=true;$("#requestReview").hidden=false;$("#requestReview").scrollIntoView({behavior:"smooth",block:"start"});
 });
@@ -277,6 +324,9 @@ function updateRequestHandoff(summary){
     }else emailLink.hidden=true;
   }
 }
+const printRequestBtn=$("#printRequest");
+if(printRequestBtn) printRequestBtn.addEventListener("click",()=>window.print());
+
 const shareBtn=$("#shareRequest");
 if(shareBtn) shareBtn.addEventListener("click",async()=>{
   const text=latestRequestSummary||$("#requestSummary")?.textContent||"";
@@ -296,6 +346,64 @@ if(shareBtn) shareBtn.addEventListener("click",async()=>{
     }
   }
 });
+
+function updateFormProgress(){
+  const form=$("#serviceForm"),bar=$("#formProgressBar"),text=$("#formProgressText");
+  if(!form||!bar||!text)return;
+  const required=[
+    ["name","your name"],
+    ["location","service location"],
+    ["problem","problem description"]
+  ];
+  const contact=String(form.elements.namedItem("phone")?.value||"").trim()||String(form.elements.namedItem("email")?.value||"").trim();
+  const vehicle=$("#vin").value.trim()||([$("#year").value,$("#make").value,$("#model").value].filter(v=>v.trim()).length>=2);
+  let score=0,total=required.length+2;
+  const missing=[];
+  required.forEach(([name,label])=>{if(String(form.elements.namedItem(name)?.value||"").trim())score++;else missing.push(label)});
+  if(contact)score++;else missing.push("phone or email");
+  if(vehicle)score++;else missing.push("VIN or vehicle details");
+  const pct=Math.round(score/total*100);
+  bar.style.width=pct+"%";
+  text.textContent=pct===100?"Core details complete — review the optional details, then submit for review.":pct+"% complete • Next: "+missing.slice(0,2).join(", ");
+}
+$("#serviceForm").addEventListener("input",updateFormProgress);
+$("#serviceForm").addEventListener("change",updateFormProgress);
+updateFormProgress();
+
+const offlineNotice=$("#offlineNotice");
+function updateOnlineState(){if(offlineNotice)offlineNotice.hidden=navigator.onLine}
+window.addEventListener("online",updateOnlineState);
+window.addEventListener("offline",updateOnlineState);
+updateOnlineState();
+
+if("serviceWorker" in navigator){
+  window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js").catch(()=>{}));
+}
+
+let deferredInstallPrompt=null;
+const installBtn=$("#installSite");
+window.addEventListener("beforeinstallprompt",e=>{
+  e.preventDefault();deferredInstallPrompt=e;if(installBtn)installBtn.hidden=false;
+});
+if(installBtn) installBtn.addEventListener("click",async()=>{
+  if(!deferredInstallPrompt)return;
+  deferredInstallPrompt.prompt();
+  await deferredInstallPrompt.userChoice;
+  deferredInstallPrompt=null;installBtn.hidden=true;
+});
+window.addEventListener("appinstalled",()=>{if(installBtn)installBtn.hidden=true});
+
+if("IntersectionObserver" in window){
+  const navLinks=$(".site-nav a");
+  const targetMap=new Map(navLinks.map(a=>[a.getAttribute("href")?.slice(1),a]));
+  const observer=new IntersectionObserver(entries=>{
+    const visible=entries.filter(e=>e.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];
+    if(!visible)return;
+    navLinks.forEach(a=>a.removeAttribute("aria-current"));
+    targetMap.get(visible.target.id)?.setAttribute("aria-current","location");
+  },{rootMargin:"-35% 0px -55% 0px",threshold:[0,.2,.5]});
+  [...targetMap.keys()].map(id=>document.getElementById(id)).filter(Boolean).forEach(el=>observer.observe(el));
+}
 
 window.addEventListener("beforeunload",saveDraft);
 const clearDraftBtn=$("#clearDraft");
