@@ -35,16 +35,41 @@ if(preferredDateInput) preferredDateInput.min=localDateInputValue();
 
 (function applyConfig(){
   const cfg=window.CAR_CONFIG||{};
-  $$("[data-config]").forEach(el=>{
+  const validValue=value=>Boolean(value)&&!String(value).trim().startsWith("[");
+  let visibleContactCards=0;
+
+  $("[data-config]").forEach(el=>{
     const key=el.dataset.config;
-    if(cfg[key]) el.textContent=cfg[key];
+    if(validValue(cfg[key])) el.textContent=cfg[key];
   });
-  $$(".contact-placeholder").forEach(el=>{
+
+  $("[data-config-card]").forEach(card=>{
+    const key=card.dataset.configCard;
+    const show=validValue(cfg[key]);
+    card.hidden=!show;
+    if(show)visibleContactCards++;
+  });
+
+  const pending=$("#contactPending");
+  if(pending)pending.hidden=visibleContactCards>0;
+
+  $(".contact-placeholder").forEach(el=>{
     const label=(el.textContent||"").toLowerCase();
-    if(label.includes("text") && cfg.smsHref) el.href=cfg.smsHref;
-    else if(label.includes("call") && cfg.phoneHref) el.href=cfg.phoneHref;
-    else if((label.includes("call")||label.includes("text")) && cfg.phoneHref) el.href=cfg.phoneHref;
+    let href="";
+    if(label.includes("text")&&cfg.smsHref)href=cfg.smsHref;
+    else if(label.includes("call")&&cfg.phoneHref)href=cfg.phoneHref;
+    else if((label.includes("call")||label.includes("text"))&&cfg.phoneHref)href=cfg.phoneHref;
+    el.hidden=!href;
+    if(href)el.href=href;
   });
+
+  const mobileBar=$(".mobile-bar");
+  if(mobileBar){
+    const visibleLinks=[...mobileBar.querySelectorAll("a")].filter(a=>!a.hidden);
+    mobileBar.style.gridTemplateColumns=visibleLinks.length>1
+      ? "repeat("+visibleLinks.length+", minmax(0,1fr))"
+      : "1fr";
+  }
 })();
 
 function enrichBusinessSchema(){
