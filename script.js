@@ -744,3 +744,101 @@ function initPremiumMotion(){
   }
 }
 initPremiumMotion();
+
+
+function initNavigationEnhancements(){
+  const serviceSearch=$("#serviceSearch");
+  const clearSearch=$("#clearServiceSearch");
+  const searchStatus=$("#serviceSearchStatus");
+  const serviceCards=$$(".service-card");
+  function filterServices(){
+    if(!serviceSearch)return;
+    const q=serviceSearch.value.trim().toLowerCase();
+    let shown=0;
+    serviceCards.forEach(card=>{
+      const haystack=((card.dataset.service||"")+" "+card.textContent).toLowerCase();
+      const match=!q||q.split(/\s+/).every(term=>haystack.includes(term));
+      card.hidden=!match;
+      if(match)shown++;
+    });
+    if(clearSearch)clearSearch.hidden=!q;
+    if(searchStatus){
+      if(!q)searchStatus.textContent="";
+      else searchStatus.textContent=shown?shown+" service option"+(shown===1?"":"s")+" matched your search.":"No exact match. Try a symptom such as noise, leak, battery, brakes, or use the Service Concierge.";
+    }
+  }
+  serviceSearch?.addEventListener("input",filterServices);
+  clearSearch?.addEventListener("click",()=>{
+    serviceSearch.value="";
+    filterServices();
+    serviceSearch.focus();
+  });
+
+  const stepButtons=$$("[data-step-target]");
+  stepButtons.forEach(button=>button.addEventListener("click",()=>{
+    const target=document.getElementById(button.dataset.stepTarget);
+    if(!target)return;
+    if(target.id==="requestReview"&&target.hidden){
+      document.getElementById("step-concern")?.scrollIntoView({behavior:"smooth",block:"start"});
+      $("#problem")?.focus({preventScroll:true});
+      return;
+    }
+    target.scrollIntoView({behavior:"smooth",block:"start"});
+    const focusable=target.querySelector?.("input,select,textarea,button");
+    if(focusable)setTimeout(()=>focusable.focus({preventScroll:true}),350);
+  }));
+
+  if("IntersectionObserver" in window){
+    const stepTargets=["step-contact","step-vehicle","step-concern","requestReview"]
+      .map(id=>document.getElementById(id)).filter(Boolean);
+    const stepObserver=new IntersectionObserver(entries=>{
+      const best=entries.filter(e=>e.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];
+      if(!best)return;
+      stepButtons.forEach(button=>button.classList.toggle("active",button.dataset.stepTarget===best.target.id));
+    },{rootMargin:"-28% 0px -58% 0px",threshold:[0,.2,.45]});
+    stepTargets.forEach(target=>stepObserver.observe(target));
+
+    const sectionLinks=$$(".section-nav a");
+    const sections=sectionLinks.map(link=>document.querySelector(link.getAttribute("href"))).filter(Boolean);
+    const sectionObserver=new IntersectionObserver(entries=>{
+      const best=entries.filter(e=>e.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];
+      if(!best)return;
+      sectionLinks.forEach(link=>link.classList.toggle("active",link.getAttribute("href")==="#"+best.target.id));
+      const active=sectionLinks.find(link=>link.classList.contains("active"));
+      active?.scrollIntoView?.({behavior:"smooth",block:"nearest",inline:"center"});
+    },{rootMargin:"-32% 0px -58% 0px",threshold:[0,.15,.35]});
+    sections.forEach(section=>sectionObserver.observe(section));
+  }
+
+  const draftBanner=$("#draftResumeBanner");
+  if(draftBanner&&localStorage.getItem(draftKey))draftBanner.hidden=false;
+  $("#dismissDraftBanner")?.addEventListener("click",()=>{if(draftBanner)draftBanner.hidden=true});
+
+  const backToTop=$("#backToTop");
+  const updateBackToTop=()=>{
+    if(!backToTop)return;
+    backToTop.hidden=window.scrollY<700;
+  };
+  window.addEventListener("scroll",updateBackToTop,{passive:true});
+  updateBackToTop();
+  backToTop?.addEventListener("click",()=>window.scrollTo({top:0,behavior:"smooth"}));
+
+  const requestReview=$("#requestReview");
+  const requestReviewObserver=new MutationObserver(()=>{
+    const reviewStep=$('[data-step-target="requestReview"]');
+    if(reviewStep)reviewStep.classList.toggle("complete",!requestReview.hidden);
+  });
+  if(requestReview)requestReviewObserver.observe(requestReview,{attributes:true,attributeFilter:["hidden"]});
+
+  $("#serviceForm")?.addEventListener("input",()=>{
+    const form=$("#serviceForm");
+    const contactDone=Boolean(String(form.elements.namedItem("name")?.value||"").trim()&&(String(form.elements.namedItem("phone")?.value||"").trim()||String(form.elements.namedItem("email")?.value||"").trim()));
+    const vehicleDone=Boolean($("#vin")?.value.trim()||($("#year")?.value.trim()&&$("#make")?.value.trim()&&$("#model")?.value.trim()));
+    const concernDone=Boolean($("#problem")?.value.trim());
+    $('[data-step-target="step-contact"]')?.classList.toggle("complete",contactDone);
+    $('[data-step-target="step-vehicle"]')?.classList.toggle("complete",vehicleDone);
+    $('[data-step-target="step-concern"]')?.classList.toggle("complete",concernDone);
+  });
+  $("#serviceForm")?.dispatchEvent(new Event("input",{bubbles:false}));
+}
+initNavigationEnhancements();
