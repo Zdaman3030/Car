@@ -372,6 +372,65 @@ function evaluateMobileSuitability(){
 }
 $("#runMobileCheck")?.addEventListener("click",evaluateMobileSuitability);
 
+const COMMON_DTC={
+  P0300:"Random or multiple-cylinder misfire detected.",
+  P0171:"Fuel system too lean, bank 1.",
+  P0172:"Fuel system too rich, bank 1.",
+  P0174:"Fuel system too lean, bank 2.",
+  P0175:"Fuel system too rich, bank 2.",
+  P0420:"Catalyst system efficiency below threshold, bank 1.",
+  P0430:"Catalyst system efficiency below threshold, bank 2.",
+  P0440:"Evaporative-emissions system malfunction.",
+  P0442:"Small evaporative-emissions leak detected.",
+  P0455:"Large evaporative-emissions leak detected.",
+  P0456:"Very small evaporative-emissions leak detected.",
+  P0128:"Coolant temperature below thermostat regulating temperature.",
+  P0562:"System voltage low.",
+  P0700:"Transmission control system has requested a malfunction indication.",
+  P0011:"Intake camshaft timing over-advanced / system performance, bank 1.",
+  P0014:"Exhaust camshaft timing over-advanced / system performance, bank 1.",
+  P0101:"Mass-air-flow sensor range/performance concern.",
+  P0133:"Oxygen-sensor circuit slow response, bank 1 sensor 1.",
+  P0401:"Exhaust-gas-recirculation flow insufficient.",
+  P0500:"Vehicle-speed sensor malfunction."
+};
+function normalizeDtcCodes(raw){
+  return [...new Set(String(raw||"").toUpperCase().split(/[\s,;]+/).map(x=>x.trim()).filter(Boolean))].slice(0,12);
+}
+function explainDtc(code){
+  if(!/^[PBCU][0-3][0-9A-F]{3}$/.test(code))return {valid:false,text:"Not a standard 5-character OBD-II code format."};
+  if(COMMON_DTC[code])return {valid:true,text:COMMON_DTC[code]};
+  if(/^P030[1-8]$/.test(code))return {valid:true,text:"Cylinder "+code.slice(-1)+" misfire detected."};
+  const families={P:"Powertrain",B:"Body",C:"Chassis",U:"Network / communication"};
+  const scope=code[1]==="0"?"standardized SAE code":code[1]==="1"?"manufacturer-specific code":"code whose exact definition may depend on the vehicle/manufacturer";
+  return {valid:true,text:(families[code[0]]||"Vehicle")+" system — "+scope+". Exact meaning should be confirmed for the specific vehicle."};
+}
+$("#dtcInput")?.addEventListener("input",e=>{
+  e.target.value=e.target.value.toUpperCase().replace(/[^PBCU0-9A-F,;\s]/g,"").slice(0,120);
+});
+$("#analyzeDtc")?.addEventListener("click",()=>{
+  const input=$("#dtcInput"),results=$("#dtcResults"),hidden=$("#dtcCodes");
+  const codes=normalizeDtcCodes(input?.value);
+  if(!codes.length){
+    hidden.value="";results.innerHTML="<span>Enter one or more codes such as P0300 or P0420.</span>";return;
+  }
+  hidden.value=codes.join(", ");
+  results.innerHTML="";
+  codes.forEach(code=>{
+    const info=explainDtc(code),row=document.createElement("div");
+    row.className="dtc-result "+(info.valid?"":"invalid");
+    const strong=document.createElement("strong");strong.textContent=code;
+    const span=document.createElement("span");span.textContent=info.text;
+    row.append(strong,span);results.appendChild(row);
+  });
+  const note=document.createElement("small");
+  note.textContent="Trouble codes identify detected conditions or systems; they do not prove which part should be replaced.";
+  results.appendChild(note);
+  saveDraft();
+});
+const savedDtc=$("#dtcCodes")?.value;
+if(savedDtc&&$("#dtcInput"))$("#dtcInput").value=savedDtc;
+
 const photosInput=$("#photos"),photoList=$("#photoList");
 if(photosInput){
   photosInput.addEventListener("change",()=>{
@@ -427,6 +486,7 @@ function technicianNotes(fd){
   if(g("symptomStarted")) lines.push("Symptom started: "+g("symptomStarted"));
   if(g("warningLights")) lines.push("Warning lights/messages: "+g("warningLights"));
   if(g("recentRepairs")) lines.push("Recent repairs/changes: "+g("recentRepairs"));
+  if(g("dtcCodes")) lines.push("OBD-II trouble codes: "+g("dtcCodes"));
   if(g("notes")) lines.push("Additional history/notes: "+g("notes"));
   if(selectedPhotos.length) lines.push("Photo attachments selected: "+selectedPhotos.map(f=>f.name).join(", "));
   return lines.join("\n");
@@ -467,7 +527,7 @@ function buildSummary(fd,requestRef){
   const labels={
     name:"Customer",phone:"Phone",email:"Email",contactPreference:"Preferred contact",location:"Service location",locationType:"Location type",parkingSurface:"Parking surface",
     vin:"VIN",year:"Year",make:"Make",model:"Model",trim:"Trim / Series",engine:"Engine",body:"Body style",drive:"Drivetrain",fuel:"Fuel type",mileage:"Mileage",
-    drivability:"Drivability",issueCategory:"Issue category",problem:"Problem / symptoms",symptomStarted:"When it started",warningLights:"Warning lights / messages",recentRepairs:"Recent repairs or changes",preferredDate:"Preferred date",preferredTime:"Preferred time",notes:"Additional notes"
+    drivability:"Drivability",issueCategory:"Issue category",problem:"Problem / symptoms",symptomStarted:"When it started",warningLights:"Warning lights / messages",recentRepairs:"Recent repairs or changes",dtcCodes:"OBD-II trouble codes",preferredDate:"Preferred date",preferredTime:"Preferred time",notes:"Additional notes"
   };
   const customer=[...fd.entries()].filter(([,v])=>String(v).trim()).map(([k,v])=>(labels[k]||k)+": "+v).join("\n");
   const tech=technicianNotes(fd);
