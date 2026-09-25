@@ -2,7 +2,9 @@
   "name": "Christian's Auto Repair",
   "short_name": "Christian's Auto",
   "description": "Full-service mobile mechanic that comes to you.",
+  "id": "./",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#0d0f11",
   "theme_color": "#111315",
@@ -12,6 +14,32 @@
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Request Service",
+      "short_name": "Request",
+      "url": "./#request",
+      "icons": [
+        {
+          "src": "./favicon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Service Assistant",
+      "short_name": "Assistant",
+      "url": "./#assistant",
+      "icons": [
+        {
+          "src": "./favicon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
     }
   ]
 }
