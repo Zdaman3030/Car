@@ -61,6 +61,17 @@
       <a class="btn btn-primary desktop-cta" href="#request">Request Service</a>
     </div>
   </header>
+  <nav class="section-nav" aria-label="Page sections">
+    <div class="wrap section-nav-track">
+      <a href="#home">Overview</a>
+      <a href="#services">Services</a>
+      <a href="#premiumExperience">Concierge</a>
+      <a href="#assistant">Assistant</a>
+      <a href="#mobileCheck">Mobile Check</a>
+      <a href="#request">Request</a>
+      <a href="#faq">FAQ</a>
+    </div>
+  </nav>
 
   <main id="main">
     <section id="home" class="hero section">
@@ -96,6 +107,21 @@
       </div>
     </section>
 
+    <section id="quickStart" class="quick-start-section">
+      <div class="wrap">
+        <div class="quick-start-head">
+          <div><p class="eyebrow premium-eyebrow">QUICK START</p><h2>What do you need right now?</h2></div>
+          <span>Jump straight to the right tool.</span>
+        </div>
+        <div class="quick-start-grid">
+          <a class="quick-start-card premium-surface" href="#assistant"><small>01</small><strong>Help me describe the problem</strong><span>Use the Service Concierge for symptom guidance.</span><b aria-hidden="true">→</b></a>
+          <a class="quick-start-card premium-surface" href="#mobileCheck"><small>02</small><strong>Can this be done mobile?</strong><span>Check likely mobile-service suitability.</span><b aria-hidden="true">→</b></a>
+          <a class="quick-start-card premium-surface" href="#services"><small>03</small><strong>Browse mechanic services</strong><span>Find the repair or system you need.</span><b aria-hidden="true">→</b></a>
+          <a class="quick-start-card premium-surface" href="#request"><small>04</small><strong>I’m ready to request service</strong><span>Go directly to the guided request form.</span><b aria-hidden="true">→</b></a>
+        </div>
+      </div>
+    </section>
+
     <section class="trust-strip premium-trust">
       <div class="wrap premium-trust-grid">
         <div><small>01</small><strong>Vehicle-first intake</strong><span>VIN, symptoms, drivability, codes, and context organized before service.</span></div>
@@ -126,15 +152,22 @@
           <h2>Full-service repair, brought to your vehicle</h2>
           <p>Many common repairs and diagnostic jobs can be completed on-site. Tell us what the vehicle is doing and Christian's Auto Repair can confirm whether the job is a good fit for mobile service.</p>
         </div>
+        <div class="service-finder">
+          <label class="sr-only" for="serviceSearch">Search services</label>
+          <span aria-hidden="true">⌕</span>
+          <input id="serviceSearch" type="search" placeholder="Search services or symptoms — brakes, battery, overheating..." autocomplete="off" />
+          <button id="clearServiceSearch" class="link-btn" type="button" hidden>Clear</button>
+        </div>
+        <div id="serviceSearchStatus" class="service-search-status" aria-live="polite"></div>
         <div class="cards services-grid">
-          <article class="card"><span class="icon">◉</span><h3>Diagnostics</h3><p>Check-engine lights, no-start conditions, warning lights, drivability concerns, and symptom-based troubleshooting.</p></article>
-          <article class="card"><span class="icon">▰</span><h3>Brakes</h3><p>Brake inspections and common brake-system service that can be completed safely on-site.</p></article>
-          <article class="card"><span class="icon">⚡</span><h3>Battery & Charging</h3><p>Battery, starter, alternator, charging-system, and electrical troubleshooting.</p></article>
-          <article class="card"><span class="icon">✦</span><h3>Engine Repair</h3><p>General engine-related diagnosis and repairs suitable for mobile service.</p></article>
-          <article class="card"><span class="icon">≈</span><h3>Cooling System</h3><p>Overheating concerns, hoses, cooling-system diagnosis, and related service.</p></article>
-          <article class="card"><span class="icon">↔</span><h3>Steering & Suspension</h3><p>Diagnosis and repair of common steering and suspension concerns.</p></article>
-          <article class="card"><span class="icon">◆</span><h3>Maintenance</h3><p>Oil and fluid service, tune-ups, belts, hoses, filters, and routine maintenance.</p></article>
-          <article class="card"><span class="icon">＋</span><h3>General Mechanical Repair</h3><p>Have another issue? Submit the symptoms and vehicle information so we can review it.</p></article>
+          <article class="card service-card" data-service="diagnostics check engine no start warning lights drivability troubleshooting scan"><span class="icon">◉</span><h3>Diagnostics</h3><p>Check-engine lights, no-start conditions, warning lights, drivability concerns, and symptom-based troubleshooting.</p></article>
+          <article class="card service-card" data-service="brakes brake pads rotors grinding squealing vibration soft pedal"><span class="icon">▰</span><h3>Brakes</h3><p>Brake inspections and common brake-system service that can be completed safely on-site.</p></article>
+          <article class="card service-card" data-service="battery alternator starter charging electrical no start clicking"><span class="icon">⚡</span><h3>Battery & Charging</h3><p>Battery, starter, alternator, charging-system, and electrical troubleshooting.</p></article>
+          <article class="card service-card" data-service="engine repair misfire rough running power timing leak tune"><span class="icon">✦</span><h3>Engine Repair</h3><p>General engine-related diagnosis and repairs suitable for mobile service.</p></article>
+          <article class="card service-card" data-service="cooling overheating coolant radiator thermostat hose leak"><span class="icon">≈</span><h3>Cooling System</h3><p>Overheating concerns, hoses, cooling-system diagnosis, and related service.</p></article>
+          <article class="card service-card" data-service="steering suspension strut shock ball joint tie rod clunk vibration pulling"><span class="icon">↔</span><h3>Steering & Suspension</h3><p>Diagnosis and repair of common steering and suspension concerns.</p></article>
+          <article class="card service-card" data-service="maintenance oil fluid tune up belt hose filter routine service"><span class="icon">◆</span><h3>Maintenance</h3><p>Oil and fluid service, tune-ups, belts, hoses, filters, and routine maintenance.</p></article>
+          <article class="card service-card" data-service="general mechanical repair electrical exhaust hvac ac heat leak noise other"><span class="icon">＋</span><h3>General Mechanical Repair</h3><p>Have another issue? Submit the symptoms and vehicle information so we can review it.</p></article>
         </div>
         <div class="callout">
           <div><strong>Not sure what you need?</strong><span>Describe the symptom instead of guessing the repair.</span></div>
@@ -283,12 +316,22 @@
           <p>Enter your VIN if you have it and we'll auto-fill available vehicle details. You can always enter or correct details manually.</p>
         </div>
 
+        <div id="draftResumeBanner" class="draft-resume" hidden>
+          <div><span class="status-dot"></span><p><strong>Saved request found</strong><small>Your unfinished request was restored on this device.</small></p></div>
+          <button id="dismissDraftBanner" class="link-btn" type="button">Dismiss</button>
+        </div>
+        <div class="request-step-nav" aria-label="Request form steps">
+          <button type="button" data-step-target="step-contact"><span>1</span>Contact</button>
+          <button type="button" data-step-target="step-vehicle"><span>2</span>Vehicle</button>
+          <button type="button" data-step-target="step-concern"><span>3</span>Concern</button>
+          <button type="button" data-step-target="requestReview"><span>4</span>Review</button>
+        </div>
         <div class="form-progress" aria-label="Service request completion">
           <div class="form-progress-copy"><strong>Request progress</strong><span id="formProgressText">Start with your contact and vehicle details.</span></div>
           <div class="progress-track" aria-hidden="true"><span id="formProgressBar"></span></div>
         </div>
         <form id="serviceForm" class="service-form" novalidate>
-          <fieldset>
+          <fieldset id="step-contact">
             <legend>Contact & location</legend>
             <div class="form-grid">
               <label>Name <input name="name" required autocomplete="name" /></label>
@@ -321,7 +364,7 @@
             </div>
           </fieldset>
 
-          <fieldset>
+          <fieldset id="step-vehicle">
             <legend>Vehicle</legend>
             <div class="saved-vehicle-bar">
               <label>Saved vehicle
@@ -354,7 +397,7 @@
             </div>
           </fieldset>
 
-          <fieldset>
+          <fieldset id="step-concern">
             <legend>What's going on?</legend>
             <div class="issue-chips" id="issueChips">
               <button type="button" data-issue="No-start">No-start</button>
@@ -479,7 +522,8 @@
     </section>
   </main>
 
-  <a class="chat-fab" href="#assistant" aria-label="Open service assistant">Ask the Service Assistant</a>
+  <button id="backToTop" class="back-to-top" type="button" aria-label="Back to top" hidden>↑</button>
+  <a class="chat-fab" href="#assistant" aria-label="Open service assistant">Ask the Service Concierge</a>
 
   <div class="mobile-bar" aria-label="Quick contact">
     <a class="contact-placeholder" href="#contact">Call</a>
