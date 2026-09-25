@@ -1,4 +1,4 @@
-const CACHE_NAME="christians-auto-repair-v8";
+const CACHE_NAME="christians-auto-repair-v9";
 const CORE_ASSETS=[
   "./","./index.html","./styles.css","./script.js","./config.js",
   "./favicon.svg","./manifest.webmanifest","./404.html","./privacy.html"
