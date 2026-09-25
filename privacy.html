@@ -52,7 +52,9 @@
           </section>
           <section class="panel">
             <h2>Clearing saved information</h2>
-            <p>You can clear the saved service draft and saved contact details from the Request Service section. Saved vehicles can also be removed individually. Clearing this site's browser storage will remove all locally saved website data.</p>
+            <p>You can clear the saved service draft and saved contact details from the Request Service section. Saved vehicles can also be removed individually.</p>
+            <button id="clearAllLocalData" class="btn btn-ghost privacy-clear" type="button">Clear All Saved Website Data</button>
+            <span id="privacyClearStatus" class="field-help" role="status" aria-live="polite"></span>
           </section>
         </div>
 
@@ -73,6 +75,20 @@
       <p>© <span id="privacyYear"></span> Christian's Auto Repair</p>
     </div>
   </footer>
-  <script>document.getElementById("privacyYear").textContent=new Date().getFullYear();</script>
+  <script>
+    document.getElementById("privacyYear").textContent=new Date().getFullYear();
+    document.getElementById("clearAllLocalData")?.addEventListener("click",()=>{
+      const keys=[
+        "christiansAutoRepairServiceDraft",
+        "christiansAutoRepairServiceDraftMeta",
+        "christiansAutoRepairSavedVehicles",
+        "christiansAutoRepairSavedContact"
+      ];
+      keys.forEach(key=>{try{localStorage.removeItem(key)}catch{}});
+      try{sessionStorage.removeItem("carChat")}catch{}
+      const status=document.getElementById("privacyClearStatus");
+      if(status)status.textContent="Saved draft, saved vehicles, remembered contact details, and this session's concierge chat were cleared from this browser.";
+    });
+  </script>
 </body>
 </html>
