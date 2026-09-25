@@ -1,0 +1,305 @@
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const state={chat:JSON.parse(sessionStorage.getItem("carChat")||"[]"),intake:{}};
+const draftKey="christiansAutoRepairServiceDraft";
+let selectedPhotos=[];
+let latestRequestSummary="";
+
+$("#yearNow").textContent=new Date().getFullYear();
+const preferredDateInput=document.querySelector('input[name="preferredDate"]');
+if(preferredDateInput) preferredDateInput.min=new Date().toISOString().slice(0,10);
+
+(function applyConfig(){
+  const cfg=window.CAR_CONFIG||{};
+  $("[data-config]").forEach(el=>{
+    const key=el.dataset.config;
+    if(cfg[key]) el.textContent=cfg[key];
+  });
+  $(".contact-placeholder").forEach(el=>{
+    const label=(el.textContent||"").toLowerCase();
+    if(label.includes("text") && cfg.smsHref) el.href=cfg.smsHref;
+    else if(label.includes("call") && cfg.phoneHref) el.href=cfg.phoneHref;
+    else if((label.includes("call")||label.includes("text")) && cfg.phoneHref) el.href=cfg.phoneHref;
+  });
+})();
+
+function saveDraft(){
+  const form=$("#serviceForm");
+  if(!form || form.hidden) return;
+  const data={};
+  new FormData(form).forEach((v,k)=>{data[k]=v});
+  localStorage.setItem(draftKey,JSON.stringify(data));
+}
+function restoreDraft(){
+  try{
+    const data=JSON.parse(localStorage.getItem(draftKey)||"null");
+    if(!data)return;
+    const form=$("#serviceForm");
+    Object.entries(data).forEach(([k,v])=>{
+      const el=form.elements.namedItem(k);
+      if(el && typeof v==="string") el.value=v;
+    });
+    if(data.issueCategory){
+      $("[data-issue]").forEach(b=>b.classList.toggle("active",b.dataset.issue===data.issueCategory));
+    }
+    const status=$("#vinStatus");
+    if(status) status.textContent="Saved service-request draft restored.";
+  }catch{}
+}
+restoreDraft();
+$("#serviceForm").addEventListener("input",saveDraft);
+$("#serviceForm").addEventListener("change",saveDraft);
+
+$("#menuBtn").addEventListener("click",()=>{const n=$("#siteNav");const open=n.classList.toggle("open");$("#menuBtn").setAttribute("aria-expanded",String(open))});
+$$(".site-nav a").forEach(a=>a.addEventListener("click",()=>$("#siteNav").classList.remove("open")));
+
+function addMsg(role,text,save=true){
+  const d=document.createElement("div");d.className="msg "+role;d.textContent=text;$("#chatLog").appendChild(d);$("#chatLog").scrollTop=$("#chatLog").scrollHeight;
+  if(save){state.chat.push({role,text});sessionStorage.setItem("carChat",JSON.stringify(state.chat))}
+}
+function bootChat(){
+  $("#chatLog").innerHTML="";
+  if(state.chat.length){state.chat.forEach(m=>addMsg(m.role,m.text,false))}
+  else addMsg("bot","Hi — I can help organize your vehicle symptoms and prepare a service request. What is the vehicle doing?");
+}
+bootChat();
+
+const danger=/no brakes|brake pedal.*floor|smoke|fire|fuel leak|gas leak|overheat|overheating|steering.*lost|wheel.*loose/i;
+function localAssistantReply(raw){
+  const t=raw.toLowerCase();
+  if(danger.test(t)){
+    state.intake.safety=true;
+    return "That could involve a safety-critical condition. Do not keep driving the vehicle if it feels unsafe. Arrange towing or immediate professional help, and include these symptoms in your service request. I can still help organize the details, but I can't determine from chat whether the vehicle is safe to drive.";
+  }
+  if(/won'?t start|no start|not start|doesn'?t start/.test(t)){
+    state.intake.category="No-start";
+    return "For a no-start issue, a few details help: Does the engine crank when you turn the key/button? Do the dash lights come on? Any clicking sound? Also include the vehicle year/make/model or VIN if you have it.";
+  }
+  if(/check engine|engine light|cel/.test(t)){
+    state.intake.category="Check-engine light";
+    return "A check-engine light can come from many systems. Is the light steady or flashing? Is the vehicle running differently, shaking, losing power, or using more fuel? If you know any diagnostic trouble codes, include them.";
+  }
+  if(/overheat|hot|temperature/.test(t)){
+    state.intake.category="Overheating";
+    return "For overheating, stop driving if the temperature is high or coolant is steaming/leaking. Tell me whether the gauge reached hot, whether coolant is leaking, whether the fan runs, and when the overheating happens.";
+  }
+  if(/brake/.test(t)){
+    state.intake.category="Brake issue";
+    return "For a brake concern, describe whether you hear grinding/squealing, feel vibration, have a soft pedal, see a warning light, or notice the vehicle pulling. If braking ability is reduced, don't drive the vehicle.";
+  }
+  if(/battery|alternator|charging|clicking/.test(t)){
+    state.intake.category="Battery / charging";
+    return "For a battery/charging issue, tell me whether the engine cranks, whether lights are dim, whether a battery warning light is on, and whether a jump-start changes anything.";
+  }
+  if(/noise|sound|vibration|rattle|clunk|squeal/.test(t)){
+    state.intake.category="Noise / vibration";
+    return "For a noise or vibration, note when it happens: at idle, accelerating, braking, turning, over bumps, or at a certain speed. Where does it seem to come from, and did it start suddenly or gradually?";
+  }
+  if(/leak|fluid|drip/.test(t)){
+    state.intake.category="Leak";
+    return "For a leak, note the fluid color, approximate location under the vehicle, whether there is a smell, and how quickly it appears. Avoid driving if you suspect fuel, severe coolant loss, or significant brake-fluid loss.";
+  }
+  if(/maintenance|oil change|tune.?up|service/.test(t)){
+    state.intake.category="Maintenance";
+    return "Christian's Auto Repair handles routine maintenance and many mechanical services on-site. Tell me the vehicle and what maintenance is due, or enter the VIN below to auto-fill available vehicle details.";
+  }
+  if(/come to|house|workplace|mobile|driveway/.test(t)){
+    return "Yes — the business is built around mobile service. A fully equipped mechanic truck comes to your home, driveway, workplace, or another agreed location. The exact location and job still need to be confirmed before the appointment.";
+  }
+  if(/price|cost|how much|quote/.test(t)){
+    return "Pricing depends on the vehicle, diagnosis, parts, labor, and the actual repair needed. I won't guess at a price. Submit the vehicle and symptom details so Christian's Auto Repair can review the job.";
+  }
+  if(/appointment|schedule|book|availability|today|same day/.test(t)){
+    return "You can request a preferred date and time below. Availability, including urgent or same-day service, must be confirmed directly by Christian's Auto Repair.";
+  }
+  if(/can.*mobile|done mobile|repair.*mobile/.test(t)){
+    return "Many diagnostic, maintenance, electrical, brake, engine, cooling, steering/suspension, and general repair jobs can be done mobile. Final suitability depends on the exact vehicle, problem, location, and tools/parts required.";
+  }
+  return "I can help narrow this down for the service request. Tell me the main symptom, when it started, any warning lights, whether the vehicle starts and drives, and anything that happened immediately before the problem.";
+}
+function vehicleContext(){
+  const f=$("#serviceForm");
+  if(!f) return {};
+  return {
+    year:$("#year")?.value||"",
+    make:$("#make")?.value||"",
+    model:$("#model")?.value||"",
+    trim:$("#trim")?.value||"",
+    engine:$("#engine")?.value||"",
+    mileage:f.elements.namedItem("mileage")?.value||"",
+    drivability:f.elements.namedItem("drivability")?.value||""
+  };
+}
+
+async function getAssistantReply(raw){
+  return localAssistantReply(raw);
+}
+
+async function sendChatMessage(v){
+  addMsg("user",v);
+  const input=$("#chatInput");
+  if(input) input.disabled=true;
+  const typing=document.createElement("div");typing.className="msg bot";typing.id="typingMsg";typing.textContent="Thinking…";$("#chatLog").appendChild(typing);$("#chatLog").scrollTop=$("#chatLog").scrollHeight;
+  const reply=await getAssistantReply(v);
+  typing.remove();
+  addMsg("bot",reply);
+  if(input){input.disabled=false;input.focus()}
+}
+
+$("#chatForm").addEventListener("submit",async e=>{e.preventDefault();const input=$("#chatInput"),v=input.value.trim();if(!v)return;input.value="";await sendChatMessage(v)});
+$("[data-prompt]").forEach(b=>b.addEventListener("click",async()=>{await sendChatMessage(b.dataset.prompt)}));
+$("#clearChat").addEventListener("click",()=>{state.chat=[];state.intake={};sessionStorage.removeItem("carChat");bootChat()});
+$("#sendToRequest").addEventListener("click",()=>{
+  const transcript=state.chat.filter(m=>m.role==="user").map(m=>m.text).join(" | ");
+  if(transcript) $("#problem").value=transcript;
+  if(state.intake.category){$("#issueCategory").value=state.intake.category;$("[data-issue]").forEach(b=>b.classList.toggle("active",b.dataset.issue===state.intake.category))}
+  saveDraft();
+  location.hash="request";
+});
+
+$("[data-issue]").forEach(b=>b.addEventListener("click",()=>{$("[data-issue]").forEach(x=>x.classList.remove("active"));b.classList.add("active");$("#issueCategory").value=b.dataset.issue;saveDraft()}));
+
+const photosInput=$("#photos"),photoList=$("#photoList");
+if(photosInput){
+  photosInput.addEventListener("change",()=>{
+    selectedPhotos=[...photosInput.files].filter(f=>f.type.startsWith("image/")).slice(0,4);
+    if(photosInput.files.length>4){
+      const dt=new DataTransfer();selectedPhotos.forEach(file=>dt.items.add(file));photosInput.files=dt.files;
+    }
+    if(photoList){
+      photoList.textContent=selectedPhotos.length
+        ? selectedPhotos.map(f=>f.name).join(", ")
+        : "No photos selected.";
+    }
+  });
+}
+
+let vinAutoTimer=null,lastAutoDecodedVin="";
+$("#vin").addEventListener("input",e=>{
+  e.target.value=e.target.value.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g,"").slice(0,17);
+  clearTimeout(vinAutoTimer);
+  const current=e.target.value;
+  if(current.length===17 && current!==lastAutoDecodedVin){
+    vinAutoTimer=setTimeout(()=>{lastAutoDecodedVin=current;$("#decodeVin").click()},450);
+  }
+});
+$("#decodeVin").addEventListener("click",async()=>{
+  const vin=$("#vin").value.trim(),status=$("#vinStatus");
+  if(vin.length!==17){status.textContent="VIN should be 17 characters. You can still enter vehicle details manually.";return}
+  status.textContent="Decoding VIN…";$("#decodeVin").disabled=true;
+  try{
+    const r=await fetch("https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValuesExtended/"+encodeURIComponent(vin)+"?format=json");
+    if(!r.ok)throw new Error("VIN service unavailable");
+    const data=(await r.json()).Results?.[0];
+    if(!data||(!data.Make&&!data.Model)){throw new Error("VIN not recognized")}
+    const set=(id,v)=>{if(v&&String(v).trim()) $(id).value=v};
+    set("#year",data.ModelYear);set("#make",data.Make);set("#model",data.Model);set("#trim",data.Trim||data.Series);
+    const engine=[data.DisplacementL&&data.DisplacementL+"L",data.EngineCylinders&&data.EngineCylinders+" cyl",data.EngineModel].filter(Boolean).join(" • ");
+    set("#engine",engine);set("#body",data.BodyClass);set("#drive",data.DriveType);set("#fuel",data.FuelTypePrimary);
+    status.textContent="VIN decoded. Please review the vehicle details and correct anything that looks wrong.";
+  }catch(err){status.textContent="We couldn't decode that VIN right now. Please enter the vehicle details manually or try again later."}
+  finally{$("#decodeVin").disabled=false}
+});
+
+function technicianNotes(fd){
+  const g=k=>String(fd.get(k)||"").trim();
+  const lines=[];
+  const vehicle=[g("year"),g("make"),g("model"),g("trim")].filter(Boolean).join(" ");
+  if(vehicle) lines.push("Vehicle: "+vehicle);
+  if(g("vin")) lines.push("VIN: "+g("vin"));
+  if(g("mileage")) lines.push("Mileage: "+g("mileage"));
+  if(g("drivability")) lines.push("Drivability: "+g("drivability"));
+  if(g("issueCategory")) lines.push("Issue category: "+g("issueCategory"));
+  if(g("problem")) lines.push("Primary symptoms: "+g("problem"));
+  if(g("notes")) lines.push("Additional history/notes: "+g("notes"));
+  if(selectedPhotos.length) lines.push("Photo attachments selected: "+selectedPhotos.map(f=>f.name).join(", "));
+  return lines.join("\n");
+}
+function validateContact(form){
+  const phone=form.elements.namedItem("phone");
+  const email=form.elements.namedItem("email");
+  const pref=String(form.elements.namedItem("contactPreference")?.value||"");
+  phone.setCustomValidity("");
+  email.setCustomValidity("");
+  const hasPhone=String(phone.value||"").trim().length>0;
+  const hasEmail=String(email.value||"").trim().length>0;
+  if(!hasPhone&&!hasEmail){
+    phone.setCustomValidity("Enter a phone number or email address so Christian's Auto Repair can respond.");
+    return false;
+  }
+  if((pref==="Phone"||pref==="Text")&&!hasPhone){
+    phone.setCustomValidity("Enter a phone number for your selected contact method.");
+    return false;
+  }
+  if(pref==="Email"&&!hasEmail){
+    email.setCustomValidity("Enter an email address for your selected contact method.");
+    return false;
+  }
+  return true;
+}
+
+function buildSummary(fd){
+  const labels={
+    name:"Customer",phone:"Phone",email:"Email",contactPreference:"Preferred contact",location:"Service location",
+    vin:"VIN",year:"Year",make:"Make",model:"Model",trim:"Trim / Series",engine:"Engine",body:"Body style",drive:"Drivetrain",fuel:"Fuel type",mileage:"Mileage",
+    drivability:"Drivability",issueCategory:"Issue category",problem:"Problem / symptoms",preferredDate:"Preferred date",preferredTime:"Preferred time",notes:"Additional notes"
+  };
+  const customer=[...fd.entries()].filter(([,v])=>String(v).trim()).map(([k,v])=>(labels[k]||k)+": "+v).join("\n");
+  const tech=technicianNotes(fd);
+  return customer+"\n\n--- TECHNICIAN INTAKE SUMMARY ---\n"+tech;
+}
+$("#serviceForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const form=e.currentTarget;
+  validateContact(form);
+  if(!form.reportValidity())return;
+  const summary=buildSummary(new FormData(form));
+  latestRequestSummary=summary;
+  saveDraft();
+  $("#requestSummary").textContent=summary;updateRequestHandoff(summary);form.hidden=true;$("#requestReview").hidden=false;$("#requestReview").scrollIntoView({behavior:"smooth",block:"start"});
+});
+$("#editRequest").addEventListener("click",()=>{$("#requestReview").hidden=true;$("#serviceForm").hidden=false;$("#serviceForm").scrollIntoView({behavior:"smooth"})});
+$("#copyRequest").addEventListener("click",async()=>{try{await navigator.clipboard.writeText($("#requestSummary").textContent);$("#copyRequest").textContent="Copied";setTimeout(()=>$("#copyRequest").textContent="Copy Request Summary",1600)}catch{alert("Copy failed. Select the summary text manually.")}});
+function updateRequestHandoff(summary){
+  const cfg=window.CAR_CONFIG||{};
+  const textLink=$("#textRequest"),emailLink=$("#emailRequest");
+  if(textLink){
+    if(cfg.smsHref){
+      const join=cfg.smsHref.includes("?")?"&":"?";
+      textLink.href=cfg.smsHref+join+"body="+encodeURIComponent(summary);
+      textLink.hidden=false;
+    }else textLink.hidden=true;
+  }
+  if(emailLink){
+    if(cfg.emailHref){
+      const join=cfg.emailHref.includes("?")?"&":"?";
+      emailLink.href=cfg.emailHref+join+"subject="+encodeURIComponent("Service request - Christian's Auto Repair")+"&body="+encodeURIComponent(summary);
+      emailLink.hidden=false;
+    }else emailLink.hidden=true;
+  }
+}
+const shareBtn=$("#shareRequest");
+if(shareBtn) shareBtn.addEventListener("click",async()=>{
+  const text=latestRequestSummary||$("#requestSummary")?.textContent||"";
+  if(!text)return;
+  try{
+    const payload={title:"Christian's Auto Repair service request",text};
+    if(selectedPhotos.length && navigator.canShare?.({files:selectedPhotos})) payload.files=selectedPhotos;
+    if(navigator.share) await navigator.share(payload);
+    else{
+      await navigator.clipboard.writeText(text);
+      shareBtn.textContent="Copied instead";
+      setTimeout(()=>shareBtn.textContent="Share Request",1600);
+    }
+  }catch(err){
+    if(err?.name!=="AbortError"){
+      try{await navigator.clipboard.writeText(text);shareBtn.textContent="Copied instead";setTimeout(()=>shareBtn.textContent="Share Request",1600)}catch{}
+    }
+  }
+});
+
+window.addEventListener("beforeunload",saveDraft);
+const clearDraftBtn=$("#clearDraft");
+if(clearDraftBtn) clearDraftBtn.addEventListener("click",()=>{
+  localStorage.removeItem(draftKey);
+  const s=$("#vinStatus"); if(s) s.textContent="Saved draft cleared.";
+});
