@@ -7,14 +7,31 @@ function readSessionChat(){
 }
 const state={chat:readSessionChat(),intake:{}};
 const draftKey="christiansAutoRepairServiceDraft";
+const draftMetaKey="christiansAutoRepairServiceDraftMeta";
 const savedVehiclesKey="christiansAutoRepairSavedVehicles";
 const savedContactKey="christiansAutoRepairSavedContact";
+function storageGet(key,fallback=null){
+  try{
+    const value=localStorage.getItem(key);
+    return value===null?fallback:value;
+  }catch{return fallback}
+}
+function storageSet(key,value){
+  try{localStorage.setItem(key,value);return true}catch{return false}
+}
+function storageRemove(key){
+  try{localStorage.removeItem(key)}catch{}
+}
 let selectedPhotos=[];
 let latestRequestSummary="";
 
 $("#yearNow").textContent=new Date().getFullYear();
 const preferredDateInput=document.querySelector('input[name="preferredDate"]');
-if(preferredDateInput) preferredDateInput.min=new Date().toISOString().slice(0,10);
+function localDateInputValue(date=new Date()){
+  const y=date.getFullYear(),m=String(date.getMonth()+1).padStart(2,"0"),d=String(date.getDate()).padStart(2,"0");
+  return y+"-"+m+"-"+d;
+}
+if(preferredDateInput) preferredDateInput.min=localDateInputValue();
 
 (function applyConfig(){
   const cfg=window.CAR_CONFIG||{};
@@ -50,11 +67,13 @@ function saveDraft(){
   if(!form || form.hidden) return;
   const data={};
   new FormData(form).forEach((v,k)=>{data[k]=v});
-  localStorage.setItem(draftKey,JSON.stringify(data));
+  if(storageSet(draftKey,JSON.stringify(data))){
+    storageSet(draftMetaKey,JSON.stringify({savedAt:new Date().toISOString()}));
+  }
 }
 function restoreDraft(){
   try{
-    const data=JSON.parse(localStorage.getItem(draftKey)||"null");
+    const data=JSON.parse(storageGet(draftKey,"null"));
     if(!data)return;
     const form=$("#serviceForm");
     Object.entries(data).forEach(([k,v])=>{
@@ -72,12 +91,12 @@ restoreDraft();
 
 function loadSavedContact(){
   try{
-    const saved=JSON.parse(localStorage.getItem(savedContactKey)||"null");
+    const saved=JSON.parse(storageGet(savedContactKey,"null"));
     if(!saved)return;
     const form=$("#serviceForm");
     for(const key of ["name","phone","email","contactPreference","location"]){
       const el=form.elements.namedItem(key);
-      if(el&&saved[key])el.value=saved[key];
+      if(el&&saved[key]&&!String(el.value||"").trim())el.value=saved[key];
     }
     const remember=$("#rememberContact");if(remember)remember.checked=true;
   }catch{}
@@ -90,30 +109,30 @@ function saveRememberedContact(){
   for(const key of ["name","phone","email","contactPreference","location"]){
     data[key]=String(form.elements.namedItem(key)?.value||"").trim();
   }
-  localStorage.setItem(savedContactKey,JSON.stringify(data));
+  storageSet(savedContactKey,JSON.stringify(data));
 }
 loadSavedContact();
 $("#rememberContact")?.addEventListener("change",e=>{
   if(e.target.checked)saveRememberedContact();
-  else localStorage.removeItem(savedContactKey);
+  else storageRemove(savedContactKey);
 });
 ["name","phone","email","contactPreference","location"].forEach(key=>{
   $("#serviceForm").elements.namedItem(key)?.addEventListener("change",saveRememberedContact);
 });
 $("#clearSavedContact")?.addEventListener("click",()=>{
-  localStorage.removeItem(savedContactKey);
+  storageRemove(savedContactKey);
   const remember=$("#rememberContact");if(remember)remember.checked=false;
   const status=$("#vinStatus");if(status)status.textContent="Saved contact details cleared from this device.";
 });
 
 function readSavedVehicles(){
   try{
-    const list=JSON.parse(localStorage.getItem(savedVehiclesKey)||"[]");
+    const list=JSON.parse(storageGet(savedVehiclesKey,"[]"));
     return Array.isArray(list)?list.slice(0,8):[];
   }catch{return []}
 }
 function writeSavedVehicles(list){
-  localStorage.setItem(savedVehiclesKey,JSON.stringify(list.slice(0,8)));
+  storageSet(savedVehiclesKey,JSON.stringify(list.slice(0,8)));
 }
 function currentVehicleData(){
   const form=$("#serviceForm");
@@ -682,7 +701,9 @@ if("IntersectionObserver" in window){
 window.addEventListener("beforeunload",saveDraft);
 const clearDraftBtn=$("#clearDraft");
 if(clearDraftBtn) clearDraftBtn.addEventListener("click",()=>{
-  localStorage.removeItem(draftKey);
+  storageRemove(draftKey);
+  storageRemove(draftMetaKey);
+  const banner=$("#draftResumeBanner");if(banner)banner.hidden=true;
   const s=$("#vinStatus"); if(s) s.textContent="Saved draft cleared.";
 });
 
@@ -811,7 +832,17 @@ function initNavigationEnhancements(){
   }
 
   const draftBanner=$("#draftResumeBanner");
-  if(draftBanner&&localStorage.getItem(draftKey))draftBanner.hidden=false;
+  if(draftBanner&&storageGet(draftKey)){
+    draftBanner.hidden=false;
+    try{
+      const meta=JSON.parse(storageGet(draftMetaKey,"null"));
+      const small=draftBanner.querySelector("small");
+      if(meta?.savedAt&&small){
+        const when=new Date(meta.savedAt);
+        if(!Number.isNaN(when.getTime()))small.textContent="Your unfinished request was restored • saved "+when.toLocaleString([], {dateStyle:"medium",timeStyle:"short"});
+      }
+    }catch{}
+  }
   $("#dismissDraftBanner")?.addEventListener("click",()=>{if(draftBanner)draftBanner.hidden=true});
 
   const backToTop=$("#backToTop");
