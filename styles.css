@@ -178,8 +178,8 @@ body:before{
 }
 .status-dot{
   width:7px;height:7px;border-radius:50%;
-  background:#65d58b;
-  box-shadow:0 0 0 4px rgba(101,213,139,.10),0 0 16px rgba(101,213,139,.35);
+  background:var(--premium-gold);
+  box-shadow:0 0 0 4px rgba(201,169,107,.10),0 0 16px rgba(201,169,107,.30);
   flex:none;
 }
 .premium-eyebrow{color:var(--premium-gold)}
