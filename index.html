@@ -351,6 +351,19 @@
               <label>Warning lights / messages <input name="warningLights" placeholder="Check engine, ABS, battery, message text..." /></label>
               <label class="full">Recent repairs or changes <input name="recentRepairs" placeholder="Recent battery, brakes, collision, maintenance, modifications, etc." /></label>
             </div>
+            <div class="dtc-helper">
+              <div>
+                <strong>OBD-II trouble codes</strong>
+                <span>If you already have codes from a scan tool, enter them here. Codes help organize the request but do not confirm the failed part by themselves.</span>
+              </div>
+              <div class="dtc-row">
+                <label class="sr-only" for="dtcInput">OBD-II trouble codes</label>
+                <input id="dtcInput" placeholder="Example: P0300, P0420" autocapitalize="characters" />
+                <button id="analyzeDtc" class="btn btn-ghost" type="button">Explain Codes</button>
+              </div>
+              <div id="dtcResults" class="dtc-results" aria-live="polite"></div>
+              <input id="dtcCodes" name="dtcCodes" type="hidden" />
+            </div>
             <label class="block">Additional notes <textarea name="notes" rows="3"></textarea></label>
             <label class="block">Optional photos
               <input id="photos" name="photos" type="file" accept="image/*" multiple />
