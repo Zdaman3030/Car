@@ -190,6 +190,62 @@
       </div>
     </section>
 
+    <section id="mobileCheck" class="section section-alt">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="eyebrow">MOBILE SERVICE CHECK</p>
+          <h2>Could this job be a good fit for mobile service?</h2>
+          <p>This quick checker helps organize the request. It does not guarantee that a repair can be completed on-site; Christian confirms suitability after reviewing the vehicle, symptoms, location, and job requirements.</p>
+        </div>
+        <div class="mobile-checker">
+          <div class="checker-grid">
+            <label>What best matches the concern?
+              <select id="checkerCategory">
+                <option value="">Select</option>
+                <option>Diagnostics</option>
+                <option>No-start</option>
+                <option>Check-engine light</option>
+                <option>Battery / charging</option>
+                <option>Brakes</option>
+                <option>Overheating</option>
+                <option>Electrical</option>
+                <option>Steering / suspension</option>
+                <option>Maintenance</option>
+                <option>Leak</option>
+                <option>Noise / vibration</option>
+                <option>Heating / A/C</option>
+                <option>Exhaust</option>
+                <option>Tire / wheel</option>
+                <option>Other</option>
+              </select>
+            </label>
+            <label>Can the vehicle move under its own power?
+              <select id="checkerDrivability">
+                <option value="">Select</option>
+                <option>Runs and drives</option>
+                <option>Runs but should not be driven</option>
+                <option>Starts but does not drive</option>
+                <option>Does not start</option>
+                <option>Unsure</option>
+              </select>
+            </label>
+            <label>Where would the work happen?
+              <select id="checkerSurface">
+                <option value="">Select</option>
+                <option>Concrete</option>
+                <option>Asphalt</option>
+                <option>Gravel</option>
+                <option>Other / unsure</option>
+              </select>
+            </label>
+            <label class="checker-danger"><input id="checkerDanger" type="checkbox" /> There is severe brake loss, active overheating, smoke/fire, a suspected fuel leak, steering loss, or another condition that feels unsafe.</label>
+          </div>
+          <button id="runMobileCheck" class="btn btn-primary" type="button">Check Mobile Suitability</button>
+          <div id="mobileCheckResult" class="checker-result" aria-live="polite" hidden></div>
+        </div>
+      </div>
+    </section>
+
     <section id="request" class="section section-alt">
       <div class="wrap">
         <div class="section-head">
@@ -212,6 +268,8 @@
               <label>Preferred contact
                 <select name="contactPreference"><option>Phone</option><option>Text</option><option>Email</option></select>
               </label>
+              <label class="remember-row"><input id="rememberContact" type="checkbox" /> Remember my contact details on this device</label>
+              <button id="clearSavedContact" class="link-btn saved-contact-clear" type="button">Clear saved contact</button>
               <label class="full">Service address / location <input name="location" required autocomplete="street-address" placeholder="Where will the vehicle be located?" /></label>
               <label>Location type
                 <select name="locationType">
