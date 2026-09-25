@@ -10,11 +10,11 @@ if(preferredDateInput) preferredDateInput.min=new Date().toISOString().slice(0,1
 
 (function applyConfig(){
   const cfg=window.CAR_CONFIG||{};
-  $("[data-config]").forEach(el=>{
+  $$("[data-config]").forEach(el=>{
     const key=el.dataset.config;
     if(cfg[key]) el.textContent=cfg[key];
   });
-  $(".contact-placeholder").forEach(el=>{
+  $$(".contact-placeholder").forEach(el=>{
     const label=(el.textContent||"").toLowerCase();
     if(label.includes("text") && cfg.smsHref) el.href=cfg.smsHref;
     else if(label.includes("call") && cfg.phoneHref) el.href=cfg.phoneHref;
@@ -39,7 +39,7 @@ function restoreDraft(){
       if(el && typeof v==="string") el.value=v;
     });
     if(data.issueCategory){
-      $("[data-issue]").forEach(b=>b.classList.toggle("active",b.dataset.issue===data.issueCategory));
+      $$("[data-issue]").forEach(b=>b.classList.toggle("active",b.dataset.issue===data.issueCategory));
     }
     const status=$("#vinStatus");
     if(status) status.textContent="Saved service-request draft restored.";
@@ -50,7 +50,7 @@ $("#serviceForm").addEventListener("input",saveDraft);
 $("#serviceForm").addEventListener("change",saveDraft);
 
 $("#menuBtn").addEventListener("click",()=>{const n=$("#siteNav");const open=n.classList.toggle("open");$("#menuBtn").setAttribute("aria-expanded",String(open))});
-$$(".site-nav a").forEach(a=>a.addEventListener("click",()=>$("#siteNav").classList.remove("open")));
+$$$(".site-nav a").forEach(a=>a.addEventListener("click",()=>$("#siteNav").classList.remove("open")));
 
 function addMsg(role,text,save=true){
   const d=document.createElement("div");d.className="msg "+role;d.textContent=text;$("#chatLog").appendChild(d);$("#chatLog").scrollTop=$("#chatLog").scrollHeight;
@@ -146,17 +146,17 @@ async function sendChatMessage(v){
 }
 
 $("#chatForm").addEventListener("submit",async e=>{e.preventDefault();const input=$("#chatInput"),v=input.value.trim();if(!v)return;input.value="";await sendChatMessage(v)});
-$("[data-prompt]").forEach(b=>b.addEventListener("click",async()=>{await sendChatMessage(b.dataset.prompt)}));
+$$("[data-prompt]").forEach(b=>b.addEventListener("click",async()=>{await sendChatMessage(b.dataset.prompt)}));
 $("#clearChat").addEventListener("click",()=>{state.chat=[];state.intake={};sessionStorage.removeItem("carChat");bootChat()});
 $("#sendToRequest").addEventListener("click",()=>{
   const transcript=state.chat.filter(m=>m.role==="user").map(m=>m.text).join(" | ");
   if(transcript) $("#problem").value=transcript;
-  if(state.intake.category){$("#issueCategory").value=state.intake.category;$("[data-issue]").forEach(b=>b.classList.toggle("active",b.dataset.issue===state.intake.category))}
+  if(state.intake.category){$("#issueCategory").value=state.intake.category;$$("[data-issue]").forEach(b=>b.classList.toggle("active",b.dataset.issue===state.intake.category))}
   saveDraft();
   location.hash="request";
 });
 
-$("[data-issue]").forEach(b=>b.addEventListener("click",()=>{$("[data-issue]").forEach(x=>x.classList.remove("active"));b.classList.add("active");$("#issueCategory").value=b.dataset.issue;saveDraft()}));
+$$("[data-issue]").forEach(b=>b.addEventListener("click",()=>{$$("[data-issue]").forEach(x=>x.classList.remove("active"));b.classList.add("active");$("#issueCategory").value=b.dataset.issue;saveDraft()}));
 
 const photosInput=$("#photos"),photoList=$("#photoList");
 if(photosInput){
