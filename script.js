@@ -405,7 +405,22 @@ function evaluateMobileSuitability(){
   result.querySelector(".checker-prefill")?.addEventListener("click",()=>{
     const form=$("#serviceForm");
     if(category){
-      const map={"Diagnostics":"Other","No-start":"No-start","Check-engine light":"Check-engine light","Battery / charging":"Battery / charging","Brakes":"Brake issue","Overheating":"Overheating","Maintenance":"Maintenance","Leak":"Leak","Noise / vibration":"Noise / vibration"};
+      const map={
+        "Diagnostics":"Other",
+        "No-start":"No-start",
+        "Check-engine light":"Check-engine light",
+        "Battery / charging":"Battery / charging",
+        "Brakes":"Brake issue",
+        "Overheating":"Overheating",
+        "Electrical":"Electrical",
+        "Steering / suspension":"Steering / suspension",
+        "Maintenance":"Maintenance",
+        "Leak":"Leak",
+        "Noise / vibration":"Noise / vibration",
+        "Heating / A/C":"Heating / A/C",
+        "Exhaust":"Exhaust",
+        "Tire / wheel":"Tire / wheel"
+      };
       const issue=map[category]||"Other";
       $("#issueCategory").value=issue;
       $$("[data-issue]").forEach(b=>b.classList.toggle("active",b.dataset.issue===issue));
@@ -877,6 +892,28 @@ function initNavigationEnhancements(){
     }catch{}
   }
   $("#dismissDraftBanner")?.addEventListener("click",()=>{if(draftBanner)draftBanner.hidden=true});
+  $("#startFreshDraft")?.addEventListener("click",()=>{
+    const form=$("#serviceForm");
+    storageRemove(draftKey);
+    storageRemove(draftMetaKey);
+    if(form){
+      form.reset();
+      loadSavedContact();
+      $("#issueCategory").value="";
+      $("[data-issue]").forEach(button=>button.classList.remove("active"));
+      $("#dtcInput").value="";
+      $("#dtcCodes").value="";
+      $("#dtcResults").innerHTML="";
+      selectedPhotos=[];
+      if($("#photoList"))$("#photoList").textContent="";
+      if($("#savedVehicleSelect"))$("#savedVehicleSelect").value="";
+      updateFormProgress();
+      updateSafetyAlert();
+      initTextCounters();
+    }
+    if(draftBanner)draftBanner.hidden=true;
+    $("#step-contact")?.scrollIntoView({behavior:"smooth",block:"start"});
+  });
 
   const backToTop=$("#backToTop");
   const updateBackToTop=()=>{
@@ -906,3 +943,18 @@ function initNavigationEnhancements(){
   $("#serviceForm")?.dispatchEvent(new Event("input",{bubbles:false}));
 }
 initNavigationEnhancements();
+
+
+function initTextCounters(){
+  const pairs=[
+    {input:$("#problem"),counter:$("#problemCounter")},
+    {input:$("#additionalNotes"),counter:$("#notesCounter")}
+  ];
+  pairs.forEach(({input,counter})=>{
+    if(!input||!counter)return;
+    const update=()=>counter.textContent=input.value.length+" / "+input.maxLength;
+    input.addEventListener("input",update);
+    update();
+  });
+}
+initTextCounters();
