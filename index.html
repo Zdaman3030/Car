@@ -83,7 +83,7 @@
           <p class="lead">Christian's Auto Repair brings a fully equipped mobile mechanic truck to your home, driveway, workplace, or another agreed location for diagnostics, maintenance, and mechanical repairs.</p>
           <div class="cta-row">
             <a class="btn btn-primary" href="#request">Request Service</a>
-            <a class="btn btn-ghost contact-placeholder" href="#contact">Call / Text</a>
+            <a class="btn btn-ghost contact-placeholder" href="#contact" hidden>Call / Text</a>
           </div>
           <ul class="hero-points" aria-label="Key benefits">
             <li>On-site vehicle diagnostics</li>
@@ -466,7 +466,7 @@
             <button id="downloadRequest" class="btn btn-ghost" type="button">Download Request</button>
             <a id="textRequest" class="btn btn-ghost" href="#contact" hidden>Text Request</a>
             <a id="emailRequest" class="btn btn-ghost" href="#contact" hidden>Email Request</a>
-            <a class="btn btn-ghost contact-placeholder" href="#contact">Call / Text</a>
+            <a class="btn btn-ghost contact-placeholder" href="#contact" hidden>Call / Text</a>
           </div>
           <p class="fine-print">Your request is saved only in this browser as a draft so you can return without retyping it. <button id="clearDraft" class="link-btn" type="button">Clear saved draft</button> Online direct submission will be connected once the business phone/email or preferred booking destination is provided.</p>
         </div>
@@ -516,11 +516,16 @@
           <h2>Ready to get your vehicle looked at?</h2>
           <p>Use the service request above, or contact Christian's Auto Repair directly once the business phone and messaging details are added.</p>
         </div>
+        <div id="contactPending" class="contact-pending">
+          <small>OWNER REVIEW PREVIEW</small>
+          <strong>Business contact details will be added after approval.</strong>
+          <span>The site is fully usable for reviewing the design, services, intake tools, and customer experience.</span>
+        </div>
         <div class="contact-card">
-          <div><small>Phone / Text</small><strong data-config="phoneDisplay">[Add business number]</strong></div>
-          <div><small>Email</small><strong data-config="emailDisplay">[Add business email]</strong></div>
-          <div><small>Service Area</small><strong data-config="serviceArea">[Add service area]</strong></div>
-          <div><small>Hours</small><strong data-config="hours">[Add business hours]</strong></div>
+          <div data-config-card="phoneDisplay" hidden><small>Phone / Text</small><strong data-config="phoneDisplay"></strong></div>
+          <div data-config-card="emailDisplay" hidden><small>Email</small><strong data-config="emailDisplay"></strong></div>
+          <div data-config-card="serviceArea" hidden><small>Service Area</small><strong data-config="serviceArea"></strong></div>
+          <div data-config-card="hours" hidden><small>Hours</small><strong data-config="hours"></strong></div>
         </div>
       </div>
     </section>
@@ -530,8 +535,8 @@
   <a class="chat-fab" href="#assistant" aria-label="Open service assistant">Ask the Service Concierge</a>
 
   <div class="mobile-bar" aria-label="Quick contact">
-    <a class="contact-placeholder" href="#contact">Call</a>
-    <a class="contact-placeholder" href="#contact">Text</a>
+    <a class="contact-placeholder" href="#contact" hidden>Call</a>
+    <a class="contact-placeholder" href="#contact" hidden>Text</a>
     <a href="#request">Request Service</a>
   </div>
 
