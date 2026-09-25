@@ -66,8 +66,9 @@
     <section id="home" class="hero section">
       <div class="wrap hero-grid">
         <div>
-          <p class="eyebrow">FULL-SERVICE MOBILE MECHANIC</p>
-          <h1>The mechanic shop that <span>comes to you.</span></h1>
+          <div class="hero-status"><span class="status-dot"></span><span>Full-service mobile mechanic</span></div>
+          <p class="eyebrow premium-eyebrow">ON-SITE AUTOMOTIVE SERVICE</p>
+          <h1>Premium mechanic service, <span>delivered to you.</span></h1>
           <p class="lead">Christian's Auto Repair brings a fully equipped mobile mechanic truck to your home, driveway, workplace, or another agreed location for diagnostics, maintenance, and mechanical repairs.</p>
           <div class="cta-row">
             <a class="btn btn-primary" href="#request">Request Service</a>
@@ -79,7 +80,8 @@
             <li>No traditional shop visit required</li>
           </ul>
         </div>
-        <div class="truck-card" role="img" aria-label="Illustration of a professional mobile mechanic service truck">
+        <div class="truck-card premium-surface" role="img" aria-label="Illustration of a professional mobile mechanic service truck">
+          <div class="truck-badge"><span></span> MOBILE SERVICE UNIT</div>
           <div class="truck-art">
             <div class="truck-cab"></div>
             <div class="truck-box"><span>CHRISTIAN'S</span><small>MOBILE AUTO REPAIR</small></div>
@@ -94,12 +96,12 @@
       </div>
     </section>
 
-    <section class="trust-strip">
-      <div class="wrap trust-grid">
-        <span>Mobile convenience</span>
-        <span>Broad mechanical service</span>
-        <span>Vehicle-specific intake</span>
-        <span>Clear next steps</span>
+    <section class="trust-strip premium-trust">
+      <div class="wrap premium-trust-grid">
+        <div><small>01</small><strong>Vehicle-first intake</strong><span>VIN, symptoms, drivability, codes, and context organized before service.</span></div>
+        <div><small>02</small><strong>Mobile suitability review</strong><span>Location, work surface, and job requirements considered before the visit.</span></div>
+        <div><small>03</small><strong>Technician-ready handoff</strong><span>A cleaner request summary with the details most useful for service planning.</span></div>
+        <div><small>04</small><strong>Built around convenience</strong><span>The service truck comes to the vehicle for suitable diagnostics, maintenance, and repairs.</span></div>
       </div>
     </section>
 
@@ -157,6 +159,33 @@
       </div>
     </section>
 
+    <section id="premiumExperience" class="section premium-experience">
+      <div class="wrap premium-experience-grid">
+        <div class="premium-copy">
+          <p class="eyebrow premium-eyebrow">SERVICE CONCIERGE</p>
+          <h2>A more refined way to start a repair.</h2>
+          <p>Instead of a vague message and a long back-and-forth, the website helps package the important details up front so Christian can review the vehicle, the concern, and the work location with better context.</p>
+          <div class="premium-feature-list">
+            <div><span>01</span><p><strong>Describe the issue clearly</strong><small>Guided symptom intake, safety prompts, and common OBD-II code explanations.</small></p></div>
+            <div><span>02</span><p><strong>Build the vehicle profile</strong><small>VIN decoding, saved vehicles, mileage, drivability, and repair history.</small></p></div>
+            <div><span>03</span><p><strong>Prepare the handoff</strong><small>Review, copy, share, print, text, email, or download a technician-ready request.</small></p></div>
+          </div>
+          <a class="btn btn-primary premium-cta" href="#request">Start a Service Request <span aria-hidden="true">→</span></a>
+        </div>
+        <div class="concierge-card premium-surface">
+          <div class="concierge-topline"><span class="status-dot"></span> GUIDED INTAKE</div>
+          <div class="concierge-preview">
+            <div class="preview-row"><small>Vehicle</small><strong>VIN or year / make / model</strong></div>
+            <div class="preview-row"><small>Concern</small><strong>Symptoms + warning lights</strong></div>
+            <div class="preview-row"><small>Diagnostics</small><strong>OBD-II codes if available</strong></div>
+            <div class="preview-row"><small>Location</small><strong>Work area + parking surface</strong></div>
+            <div class="preview-row"><small>Handoff</small><strong>Technician-ready summary</strong></div>
+          </div>
+          <div class="concierge-note">Built to reduce guesswork before the mobile service visit.</div>
+        </div>
+      </div>
+    </section>
+
     <section id="assistant" class="section">
       <div class="wrap assistant-grid">
         <div>
@@ -174,7 +203,7 @@
         </div>
         <div class="chat-card" aria-label="Service assistant">
           <div class="chat-head">
-            <div><strong>Christian's Service Assistant</strong><small>Browser-based pre-service intake</small></div>
+            <div><strong>Christian's Service Concierge</strong><small>Guided browser-based intake</small></div>
             <button id="clearChat" class="link-btn">Clear</button>
           </div>
           <div id="chatLog" class="chat-log" aria-live="polite"></div>
@@ -248,9 +277,9 @@
 
     <section id="request" class="section section-alt">
       <div class="wrap">
-        <div class="section-head">
-          <p class="eyebrow">REQUEST SERVICE</p>
-          <h2>Tell Christian's Auto Repair what you need</h2>
+        <div class="section-head request-head">
+          <p class="eyebrow premium-eyebrow">REQUEST SERVICE</p>
+          <h2>Build a cleaner, faster service request.</h2>
           <p>Enter your VIN if you have it and we'll auto-fill available vehicle details. You can always enter or correct details manually.</p>
         </div>
 
