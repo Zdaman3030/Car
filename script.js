@@ -529,7 +529,7 @@ function buildSummary(fd,requestRef){
     vin:"VIN",year:"Year",make:"Make",model:"Model",trim:"Trim / Series",engine:"Engine",body:"Body style",drive:"Drivetrain",fuel:"Fuel type",mileage:"Mileage",
     drivability:"Drivability",issueCategory:"Issue category",problem:"Problem / symptoms",symptomStarted:"When it started",warningLights:"Warning lights / messages",recentRepairs:"Recent repairs or changes",dtcCodes:"OBD-II trouble codes",preferredDate:"Preferred date",preferredTime:"Preferred time",notes:"Additional notes"
   };
-  const customer=[...fd.entries()].filter(([,v])=>String(v).trim()).map(([k,v])=>(labels[k]||k)+": "+v).join("\n");
+  const customer=[...fd.entries()].filter(([k,v])=>k!=="photos"&&!(typeof File!=="undefined"&&v instanceof File)&&String(v).trim()).map(([k,v])=>(labels[k]||k)+": "+v).join("\n");
   const tech=technicianNotes(fd);
   return "Request reference: "+requestRef+"\n"+customer+"\n\n--- TECHNICIAN INTAKE SUMMARY ---\n"+tech;
 }
