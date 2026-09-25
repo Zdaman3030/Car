@@ -66,7 +66,10 @@ function saveDraft(){
   const form=$("#serviceForm");
   if(!form || form.hidden) return;
   const data={};
-  new FormData(form).forEach((v,k)=>{data[k]=v});
+  new FormData(form).forEach((v,k)=>{
+    if(typeof File!=="undefined"&&v instanceof File)return;
+    data[k]=v;
+  });
   if(storageSet(draftKey,JSON.stringify(data))){
     storageSet(draftMetaKey,JSON.stringify({savedAt:new Date().toISOString()}));
   }
@@ -824,7 +827,12 @@ function initNavigationEnhancements(){
     const sectionObserver=new IntersectionObserver(entries=>{
       const best=entries.filter(e=>e.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];
       if(!best)return;
-      sectionLinks.forEach(link=>link.classList.toggle("active",link.getAttribute("href")==="#"+best.target.id));
+      sectionLinks.forEach(link=>{
+        const active=link.getAttribute("href")==="#"+best.target.id;
+        link.classList.toggle("active",active);
+        if(active)link.setAttribute("aria-current","location");
+        else link.removeAttribute("aria-current");
+      });
       const active=sectionLinks.find(link=>link.classList.contains("active"));
       active?.scrollIntoView?.({behavior:"smooth",block:"nearest",inline:"center"});
     },{rootMargin:"-32% 0px -58% 0px",threshold:[0,.15,.35]});
