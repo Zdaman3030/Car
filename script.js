@@ -685,3 +685,62 @@ if(clearDraftBtn) clearDraftBtn.addEventListener("click",()=>{
   localStorage.removeItem(draftKey);
   const s=$("#vinStatus"); if(s) s.textContent="Saved draft cleared.";
 });
+
+
+function initPremiumMotion(){
+  const reduceMotion=window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  const revealTargets=[
+    ...$$(".section-head"),
+    ...$$(".card"),
+    ...$$(".mini-card"),
+    ...$$(".timeline li"),
+    ...$$(".premium-trust-grid > div"),
+    ...$$(".premium-feature-list > div"),
+    ...$$(".concierge-card"),
+    ...$$(".chat-card"),
+    ...$$(".mobile-checker"),
+    ...$$(".form-progress"),
+    ...$$(".service-form fieldset"),
+    ...$$(".panel"),
+    ...$$(".contact-card > div")
+  ];
+  if(!reduceMotion&&"IntersectionObserver" in window){
+    revealTargets.forEach((el,index)=>{
+      el.classList.add("reveal");
+      el.style.transitionDelay=Math.min((index%4)*55,165)+"ms";
+    });
+    const revealObserver=new IntersectionObserver(entries=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting){
+          entry.target.classList.add("is-visible");
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    },{rootMargin:"0px 0px -8% 0px",threshold:.08});
+    revealTargets.forEach(el=>revealObserver.observe(el));
+  }else{
+    revealTargets.forEach(el=>el.classList.add("is-visible"));
+  }
+
+  const header=$(".site-header");
+  const updateHeader=()=>header?.classList.toggle("scrolled",window.scrollY>18);
+  updateHeader();
+  window.addEventListener("scroll",updateHeader,{passive:true});
+
+  if(!reduceMotion&&window.matchMedia?.("(pointer:fine)")?.matches){
+    $$(".premium-surface").forEach(surface=>{
+      surface.addEventListener("pointermove",event=>{
+        const rect=surface.getBoundingClientRect();
+        const x=((event.clientX-rect.left)/rect.width)*100;
+        const y=((event.clientY-rect.top)/rect.height)*100;
+        surface.style.setProperty("--mx",x+"%");
+        surface.style.setProperty("--my",y+"%");
+      });
+      surface.addEventListener("pointerleave",()=>{
+        surface.style.removeProperty("--mx");
+        surface.style.removeProperty("--my");
+      });
+    });
+  }
+}
+initPremiumMotion();
