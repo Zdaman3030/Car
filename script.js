@@ -71,7 +71,7 @@ $("#serviceForm").addEventListener("input",saveDraft);
 $("#serviceForm").addEventListener("change",saveDraft);
 
 $("#menuBtn").addEventListener("click",()=>{const n=$("#siteNav");const open=n.classList.toggle("open");$("#menuBtn").setAttribute("aria-expanded",String(open))});
-$(".site-nav a").forEach(a=>a.addEventListener("click",()=>{$("#siteNav").classList.remove("open");$("#menuBtn").setAttribute("aria-expanded","false")}));
+$$(".site-nav a").forEach(a=>a.addEventListener("click",()=>{$("#siteNav").classList.remove("open");$("#menuBtn").setAttribute("aria-expanded","false")}));
 document.addEventListener("keydown",e=>{
   if(e.key==="Escape"&&$("#siteNav").classList.contains("open")){
     $("#siteNav").classList.remove("open");$("#menuBtn").setAttribute("aria-expanded","false");$("#menuBtn").focus();
