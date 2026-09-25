@@ -213,11 +213,39 @@
                 <select name="contactPreference"><option>Phone</option><option>Text</option><option>Email</option></select>
               </label>
               <label class="full">Service address / location <input name="location" required autocomplete="street-address" placeholder="Where will the vehicle be located?" /></label>
+              <label>Location type
+                <select name="locationType">
+                  <option value="">Select</option>
+                  <option>Home / driveway</option>
+                  <option>Workplace / private lot</option>
+                  <option>Private parking area</option>
+                  <option>Other agreed location</option>
+                </select>
+              </label>
+              <label>Parking surface
+                <select name="parkingSurface">
+                  <option value="">Select</option>
+                  <option>Concrete</option>
+                  <option>Asphalt</option>
+                  <option>Gravel</option>
+                  <option>Other / unsure</option>
+                </select>
+              </label>
             </div>
           </fieldset>
 
           <fieldset>
             <legend>Vehicle</legend>
+            <div class="saved-vehicle-bar">
+              <label>Saved vehicle
+                <select id="savedVehicleSelect"><option value="">Choose a saved vehicle</option></select>
+              </label>
+              <div class="saved-vehicle-actions">
+                <button id="saveVehicle" class="btn btn-ghost" type="button">Save This Vehicle</button>
+                <button id="removeVehicle" class="link-btn" type="button">Remove Saved</button>
+              </div>
+              <span id="savedVehicleStatus" class="status" aria-live="polite"></span>
+            </div>
             <div class="vin-row">
               <label>VIN <input id="vin" name="vin" maxlength="17" autocapitalize="characters" placeholder="17-character VIN" /></label>
               <button id="decodeVin" class="btn btn-ghost" type="button">Decode VIN</button>
@@ -273,6 +301,10 @@
             </label>
           </fieldset>
 
+          <div id="safetyAlert" class="safety-alert" role="alert" hidden>
+            <strong>Safety note</strong>
+            <span id="safetyAlertText"></span>
+          </div>
           <div class="privacy-note">Your submitted details should only be used to respond to your service request. Final diagnosis, pricing, and appointment availability require review by Christian's Auto Repair.</div>
           <button class="btn btn-primary btn-wide" type="submit">Review Service Request</button>
         </form>
@@ -284,6 +316,7 @@
             <button id="copyRequest" class="btn btn-primary" type="button">Copy Request Summary</button>
             <button id="shareRequest" class="btn btn-ghost" type="button">Share Request</button>
             <button id="printRequest" class="btn btn-ghost" type="button">Print / Save PDF</button>
+            <button id="downloadRequest" class="btn btn-ghost" type="button">Download Request</button>
             <a id="textRequest" class="btn btn-ghost" href="#contact" hidden>Text Request</a>
             <a id="emailRequest" class="btn btn-ghost" href="#contact" hidden>Email Request</a>
             <a class="btn btn-ghost contact-placeholder" href="#contact">Call / Text</a>
