@@ -1,13 +1,18 @@
 {
   "name": "Christian's Auto Repair",
   "short_name": "Christian's Auto",
-  "description": "Full-service mobile mechanic that comes to you.",
+  "description": "Full-service mobile mechanic bringing on-site diagnostics, maintenance, and suitable repairs to the vehicle.",
   "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#0d0f11",
   "theme_color": "#111315",
+  "lang": "en-US",
+  "categories": [
+    "business",
+    "automotive"
+  ],
   "icons": [
     {
       "src": "./favicon.svg",
@@ -30,9 +35,21 @@
       ]
     },
     {
-      "name": "Service Assistant",
-      "short_name": "Assistant",
+      "name": "Service Concierge",
+      "short_name": "Concierge",
       "url": "./#assistant",
+      "icons": [
+        {
+          "src": "./favicon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Mobile Service Check",
+      "short_name": "Mobile Check",
+      "url": "./#mobileCheck",
       "icons": [
         {
           "src": "./favicon.svg",
