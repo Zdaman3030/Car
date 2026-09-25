@@ -770,3 +770,6 @@ footer{
 @media(prefers-reduced-motion:reduce){
   .quick-start-card:hover,.quick-start-card:focus-visible,.back-to-top:hover,.back-to-top:focus-visible{transform:none}
 }
+
+.review-next-steps{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;margin:14px 0;padding:14px 15px;border:1px solid rgba(201,169,107,.20);border-radius:13px;background:rgba(201,169,107,.055)}.review-next-steps>div{display:grid;gap:2px}.review-next-steps strong{font-size:14px}.review-next-steps small{color:var(--muted);font-size:12px}.review-check{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:rgba(201,169,107,.12);border:1px solid rgba(201,169,107,.28);color:var(--premium-gold);font-weight:900}
+.privacy-clear{margin-top:14px}.not-found-main{min-height:calc(100vh - 76px);display:grid;align-items:center}.not-found-card{max-width:820px;margin:auto;padding:clamp(28px,5vw,56px);border-radius:28px}.not-found-card h1{font-size:clamp(42px,7vw,72px);line-height:.98;letter-spacing:-.055em;margin:.08em 0 .3em}.not-found-card>p:not(.eyebrow){max-width:620px;color:var(--muted);font-size:17px}
