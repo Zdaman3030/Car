@@ -6,11 +6,17 @@
   <title>Christian's Auto Repair | Full-Service Mobile Mechanic</title>
   <meta name="description" content="Christian's Auto Repair is a full-service mobile mechanic. A fully equipped service truck comes to your home, driveway, workplace, or another agreed location for diagnostics, maintenance, and repairs." />
   <meta name="theme-color" content="#111315" />
+  <meta name="robots" content="index,follow,max-image-preview:large" />
+  <link rel="canonical" href="https://zdaman3030.github.io/Car/" />
   <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <meta property="og:title" content="Christian's Auto Repair | Mobile Mechanic" />
   <meta property="og:description" content="The mechanic shop that comes to you. Mobile diagnostics, maintenance, and repair from a fully equipped service truck." />
   <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://zdaman3030.github.io/Car/" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Christian's Auto Repair | Mobile Mechanic" />
+  <meta name="twitter:description" content="Mobile diagnostics, maintenance, and repair from a service truck that comes to you." />
   <link rel="stylesheet" href="./styles.css" />
   <script type="application/ld+json">
   {
@@ -24,6 +30,7 @@
 <body>
   <noscript><div style="padding:12px 16px;background:#3b1614;color:#fff;text-align:center;font-family:system-ui">JavaScript is disabled. You can still browse services and contact information, but VIN decoding and the service assistant require JavaScript.</div></noscript>
   <a class="skip-link" href="#main">Skip to content</a>
+  <div id="offlineNotice" class="offline-notice" role="status" hidden>You’re offline. The site and saved service draft still work, but VIN lookup and external links may be unavailable.</div>
 
   <header class="site-header">
     <div class="wrap nav-wrap">
@@ -81,6 +88,20 @@
         <span>Broad mechanical service</span>
         <span>Vehicle-specific intake</span>
         <span>Clear next steps</span>
+      </div>
+    </section>
+
+    <section id="why-mobile" class="section section-compact">
+      <div class="wrap">
+        <div class="section-head compact-head">
+          <p class="eyebrow">WHY MOBILE SERVICE</p>
+          <h2>Repair without rearranging your whole day</h2>
+        </div>
+        <div class="benefit-grid">
+          <article class="mini-card"><strong>We come to the vehicle</strong><span>No waiting room or unnecessary trip to a traditional shop for jobs that can be handled on-site.</span></article>
+          <article class="mini-card"><strong>Better information up front</strong><span>VIN decoding and structured symptom intake help organize the job before the truck arrives.</span></article>
+          <article class="mini-card"><strong>Clear suitability check</strong><span>Some jobs need equipment or conditions that are not practical in the field. Submit the issue and Christian can confirm the right next step.</span></article>
+        </div>
       </div>
     </section>
 
@@ -165,6 +186,10 @@
           <p>Enter your VIN if you have it and we'll auto-fill available vehicle details. You can always enter or correct details manually.</p>
         </div>
 
+        <div class="form-progress" aria-label="Service request completion">
+          <div class="form-progress-copy"><strong>Request progress</strong><span id="formProgressText">Start with your contact and vehicle details.</span></div>
+          <div class="progress-track" aria-hidden="true"><span id="formProgressBar"></span></div>
+        </div>
         <form id="serviceForm" class="service-form" novalidate>
           <fieldset>
             <legend>Contact & location</legend>
@@ -223,6 +248,11 @@
               <label>Preferred date <input name="preferredDate" type="date" /></label>
               <label>Preferred time <input name="preferredTime" type="time" /></label>
             </div>
+            <div class="form-grid">
+              <label>When did it start? <input name="symptomStarted" placeholder="Today, this week, after a repair, etc." /></label>
+              <label>Warning lights / messages <input name="warningLights" placeholder="Check engine, ABS, battery, message text..." /></label>
+              <label class="full">Recent repairs or changes <input name="recentRepairs" placeholder="Recent battery, brakes, collision, maintenance, modifications, etc." /></label>
+            </div>
             <label class="block">Additional notes <textarea name="notes" rows="3"></textarea></label>
             <label class="block">Optional photos
               <input id="photos" name="photos" type="file" accept="image/*" multiple />
@@ -236,11 +266,12 @@
         </form>
 
         <div id="requestReview" class="review-card" hidden>
-          <div class="review-head"><div><p class="eyebrow">READY TO SEND</p><h3>Review your service request</h3></div><button id="editRequest" class="link-btn">Edit</button></div>
+          <div class="review-head"><div><p class="eyebrow">READY TO SEND</p><h3>Review your service request</h3><p class="request-ref">Reference: <strong id="requestRef">—</strong></p></div><button id="editRequest" class="link-btn">Edit</button></div>
           <pre id="requestSummary"></pre>
           <div class="cta-row">
             <button id="copyRequest" class="btn btn-primary" type="button">Copy Request Summary</button>
             <button id="shareRequest" class="btn btn-ghost" type="button">Share Request</button>
+            <button id="printRequest" class="btn btn-ghost" type="button">Print / Save PDF</button>
             <a id="textRequest" class="btn btn-ghost" href="#contact" hidden>Text Request</a>
             <a id="emailRequest" class="btn btn-ghost" href="#contact" hidden>Email Request</a>
             <a class="btn btn-ghost contact-placeholder" href="#contact">Call / Text</a>
@@ -316,6 +347,7 @@
       <div class="brand footer-brand"><span class="brand-mark">CAR</span><span><strong>Christian's</strong><small>Auto Repair</small></span></div>
       <p>Full-service mobile mechanic • Service truck comes to you</p>
       <p>© <span id="yearNow"></span> Christian's Auto Repair</p>
+      <button id="installSite" class="link-btn footer-install" type="button" hidden>Add to Home Screen</button>
     </div>
   </footer>
 
