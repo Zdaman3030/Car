@@ -7,6 +7,7 @@ function readSessionChat(){
 }
 const state={chat:readSessionChat(),intake:{}};
 const draftKey="christiansAutoRepairServiceDraft";
+const savedVehiclesKey="christiansAutoRepairSavedVehicles";
 let selectedPhotos=[];
 let latestRequestSummary="";
 
@@ -67,6 +68,68 @@ function restoreDraft(){
   }catch{}
 }
 restoreDraft();
+
+function readSavedVehicles(){
+  try{
+    const list=JSON.parse(localStorage.getItem(savedVehiclesKey)||"[]");
+    return Array.isArray(list)?list.slice(0,8):[];
+  }catch{return []}
+}
+function writeSavedVehicles(list){
+  localStorage.setItem(savedVehiclesKey,JSON.stringify(list.slice(0,8)));
+}
+function currentVehicleData(){
+  const form=$("#serviceForm");
+  return {
+    id:$("#vin").value.trim()||[ $("#year").value,$("#make").value,$("#model").value ].join("-").toLowerCase().replace(/[^a-z0-9]+/g,"-"),
+    vin:$("#vin").value.trim(),year:$("#year").value.trim(),make:$("#make").value.trim(),model:$("#model").value.trim(),
+    trim:$("#trim").value.trim(),engine:$("#engine").value.trim(),body:$("#body").value.trim(),drive:$("#drive").value.trim(),
+    fuel:$("#fuel").value.trim(),mileage:String(form.elements.namedItem("mileage")?.value||"").trim()
+  };
+}
+function vehicleLabel(v){
+  const main=[v.year,v.make,v.model,v.trim].filter(Boolean).join(" ");
+  return main+(v.vin?" • "+v.vin.slice(-6):"");
+}
+function renderSavedVehicles(){
+  const select=$("#savedVehicleSelect");
+  if(!select)return;
+  const current=select.value;
+  const list=readSavedVehicles();
+  select.innerHTML='<option value="">Choose a saved vehicle</option>';
+  list.forEach(v=>{
+    const option=document.createElement("option");
+    option.value=v.id;option.textContent=vehicleLabel(v)||"Saved vehicle";select.appendChild(option);
+  });
+  if(list.some(v=>v.id===current))select.value=current;
+}
+function loadSavedVehicle(id){
+  const v=readSavedVehicles().find(x=>x.id===id);
+  if(!v)return;
+  const map={vin:"#vin",year:"#year",make:"#make",model:"#model",trim:"#trim",engine:"#engine",body:"#body",drive:"#drive",fuel:"#fuel"};
+  Object.entries(map).forEach(([k,sel])=>{if(v[k]!=null)$(sel).value=v[k]});
+  const mileage=$("#serviceForm").elements.namedItem("mileage");if(mileage)mileage.value=v.mileage||"";
+  $("#savedVehicleStatus").textContent="Saved vehicle loaded.";
+  saveDraft();updateFormProgress();
+}
+renderSavedVehicles();
+$("#savedVehicleSelect")?.addEventListener("change",e=>{if(e.target.value)loadSavedVehicle(e.target.value)});
+$("#saveVehicle")?.addEventListener("click",()=>{
+  const v=currentVehicleData(),status=$("#savedVehicleStatus");
+  if(!v.make&&!v.model&&!v.vin){status.textContent="Add a VIN or vehicle details before saving.";return}
+  if(!v.id){status.textContent="Add enough vehicle details to save this vehicle.";return}
+  const list=readSavedVehicles();
+  const existing=list.findIndex(x=>x.id===v.id);
+  if(existing>=0)list[existing]=v;else list.unshift(v);
+  writeSavedVehicles(list);renderSavedVehicles();$("#savedVehicleSelect").value=v.id;
+  status.textContent=existing>=0?"Saved vehicle updated.":"Vehicle saved on this device.";
+});
+$("#removeVehicle")?.addEventListener("click",()=>{
+  const select=$("#savedVehicleSelect"),status=$("#savedVehicleStatus"),id=select?.value;
+  if(!id){status.textContent="Choose a saved vehicle first.";return}
+  writeSavedVehicles(readSavedVehicles().filter(v=>v.id!==id));renderSavedVehicles();status.textContent="Saved vehicle removed.";
+});
+
 $("#serviceForm").addEventListener("input",saveDraft);
 $("#serviceForm").addEventListener("change",saveDraft);
 
@@ -215,7 +278,7 @@ $("#sendToRequest").addEventListener("click",()=>{
   location.hash="request";
 });
 
-$$("[data-issue]").forEach(b=>b.addEventListener("click",()=>{$$("[data-issue]").forEach(x=>x.classList.remove("active"));b.classList.add("active");$("#issueCategory").value=b.dataset.issue;saveDraft()}));
+$("[data-issue]").forEach(b=>b.addEventListener("click",()=>{$("[data-issue]").forEach(x=>x.classList.remove("active"));b.classList.add("active");$("#issueCategory").value=b.dataset.issue;saveDraft();updateSafetyAlert()}));
 
 const photosInput=$("#photos"),photoList=$("#photoList");
 if(photosInput){
@@ -310,7 +373,7 @@ function getRequestReference(){
 
 function buildSummary(fd,requestRef){
   const labels={
-    name:"Customer",phone:"Phone",email:"Email",contactPreference:"Preferred contact",location:"Service location",
+    name:"Customer",phone:"Phone",email:"Email",contactPreference:"Preferred contact",location:"Service location",locationType:"Location type",parkingSurface:"Parking surface",
     vin:"VIN",year:"Year",make:"Make",model:"Model",trim:"Trim / Series",engine:"Engine",body:"Body style",drive:"Drivetrain",fuel:"Fuel type",mileage:"Mileage",
     drivability:"Drivability",issueCategory:"Issue category",problem:"Problem / symptoms",symptomStarted:"When it started",warningLights:"Warning lights / messages",recentRepairs:"Recent repairs or changes",preferredDate:"Preferred date",preferredTime:"Preferred time",notes:"Additional notes"
   };
@@ -352,6 +415,16 @@ function updateRequestHandoff(summary){
 }
 const printRequestBtn=$("#printRequest");
 if(printRequestBtn) printRequestBtn.addEventListener("click",()=>window.print());
+const downloadRequestBtn=$("#downloadRequest");
+if(downloadRequestBtn) downloadRequestBtn.addEventListener("click",()=>{
+  const text=latestRequestSummary||$("#requestSummary")?.textContent||"";
+  if(!text)return;
+  const ref=$("#requestRef")?.textContent||"service-request";
+  const blob=new Blob([text+"\n"],{type:"text/plain;charset=utf-8"});
+  const url=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=url;a.download=("christians-auto-repair-"+ref+".txt").replace(/[^a-z0-9._-]+/gi,"-").toLowerCase();
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
+});
 
 const shareBtn=$("#shareRequest");
 if(shareBtn) shareBtn.addEventListener("click",async()=>{
@@ -372,6 +445,28 @@ if(shareBtn) shareBtn.addEventListener("click",async()=>{
     }
   }
 });
+
+function updateSafetyAlert(){
+  const form=$("#serviceForm"),box=$("#safetyAlert"),text=$("#safetyAlertText");
+  if(!form||!box||!text)return;
+  const issue=String($("#issueCategory")?.value||"").toLowerCase();
+  const symptoms=[
+    String(form.elements.namedItem("problem")?.value||""),
+    String(form.elements.namedItem("warningLights")?.value||""),
+    String(form.elements.namedItem("drivability")?.value||""),
+    issue
+  ].join(" ").toLowerCase();
+  let message="";
+  if(/fuel leak|gas leak|smoke|fire|burning smell/.test(symptoms)) message="Do not drive the vehicle if there is active smoke, fire, a suspected fuel leak, or another immediate hazard. Move away from danger and seek emergency/professional assistance as appropriate.";
+  else if(/no brakes|brake pedal.*floor|lost brakes|brake issue/.test(symptoms)&&/does not|reduced|soft|floor|no brakes|lost/.test(symptoms)) message="Reduced or lost braking can be dangerous. Do not drive the vehicle if braking ability is compromised; arrange towing or professional assistance.";
+  else if(/overheat|overheating|temperature.*hot|coolant.*steam/.test(symptoms)) message="Continuing to drive an overheating vehicle can cause damage or create a safety risk. Shut it down if it is overheating and arrange professional assistance.";
+  else if(/steering.*lost|cannot steer|wheel.*loose/.test(symptoms)) message="Loss of steering control or a potentially loose wheel is unsafe. Do not continue driving; arrange towing or immediate professional help.";
+  else if(/flashing.*check engine|check engine.*flashing/.test(symptoms)) message="A flashing check-engine light can indicate a severe misfire. Avoid driving when the vehicle is running poorly and have it inspected promptly.";
+  box.hidden=!message;text.textContent=message;
+}
+$("#serviceForm").addEventListener("input",updateSafetyAlert);
+$("#serviceForm").addEventListener("change",updateSafetyAlert);
+updateSafetyAlert();
 
 function updateFormProgress(){
   const form=$("#serviceForm"),bar=$("#formProgressBar"),text=$("#formProgressText");
